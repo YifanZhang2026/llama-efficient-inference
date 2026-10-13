@@ -14,13 +14,17 @@
 
 ## 测量方法约定
 
-> 把最终采用的计时方法写在这里，后面所有表格都按这个口径测。
+工具：`bench.py`（Part 1 / Part 2 的性能数字都用它；`run_benchmark.py` 只作 E0 对照）。
 
-- warmup：
-- prefill / decode 拆分方式：
-- 采样设置（temperature / 是否固定输出长度）：
-- 重复次数与统计量（均值 / 中位数）：
-- 峰值显存口径（`max_memory_allocated` 何时 reset）：
+- 输入：`torch.randint` 随机 token，不经 tokenizer；输出 = 1 次 prefill + (output_len−1) 步 decode，与 `generate(max_gen_len=output_len)` 工作量相同。
+- 采样：GPU 上 greedy argmax，循环内无 host 同步；输出长度固定，不会因 EOS 提前停。
+- warmup：默认 3 轮；第 1 轮的端到端时间记为 `cold_e2e_ms`（只有进程内第一个配置是真正的冷启动）。
+- 计时：CUDA event 记录在 prefill 前后和每步 decode 之后；event 间隔包含 GPU 等待 CPU 发 kernel 的空闲时间。
+- 统计：默认 10 轮；prefill / e2e 取中位数，decode 取所有步的中位数并报 p10 / p90。
+- 峰值显存：warmup 后 `reset_peak_memory_stats()`，再取计时阶段的 `max_memory_allocated()`；`static_mb` = 建好（并量化 / 转换）模型后的常驻显存，含预分配 KV cache。
+- 每个 bs 单独建一个模型，KV cache 按该 bs 预分配。
+- 结果追加到 `results/bench.csv`，含 GPU、torch 版本和时间戳。
+- profiling：`--profile` 只跑一轮带 NVTX 的 rep，配合 `nsys --capture-range=cudaProfilerApi` 只抓这一段。
 
 ---
 
