@@ -1,0 +1,88 @@
+GPU: NVIDIA A100-PCIE-40GB
+PyTorch: 2.8.0+cu128
+
+======================================================================
+INT4 Quantization Benchmark
+======================================================================
+
+--- FP16 Baseline ---
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+  [FP16] batch=1 in=256 out=32: 1.11s, 3072 MB peak, 28.9 tok/s
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  [FP16] batch=8 in=256 out=32: 0.70s, 4495 MB peak, 367.0 tok/s
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  [FP16] batch=16 in=256 out=32: 0.73s, 6134 MB peak, 703.9 tok/s
+
+--- INT4 Quantized ---
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Model size: 2858.13 MB
+  Parameters: 2858.13 MB
+  Buffers: 0.00 MB
+Model size: 1127.21 MB
+  Parameters: 501.13 MB
+  Buffers: 626.08 MB
+  [INT4] batch=1 in=256 out=32: 1.56s, 4540 MB peak, 20.5 tok/s
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Model size: 2858.13 MB
+  Parameters: 2858.13 MB
+  Buffers: 0.00 MB
+Model size: 1127.21 MB
+  Parameters: 501.13 MB
+  Buffers: 626.08 MB
+  [INT4] batch=8 in=256 out=32: 1.66s, 5508 MB peak, 153.9 tok/s
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Model size: 2858.13 MB
+  Parameters: 2858.13 MB
+  Buffers: 0.00 MB
+Model size: 1127.21 MB
+  Parameters: 501.13 MB
+  Buffers: 626.08 MB
+  [INT4] batch=16 in=256 out=32: 1.73s, 6621 MB peak, 296.0 tok/s
+
+======================================================================
+MoE Benchmark
+======================================================================
+
+--- Dense Baseline ---
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Total parameters: 1,498,482,688
+  [Dense] batch=1 in=256 out=32: 0.57s, 3074 MB peak, 56.2 tok/s
+
+--- MoE (N=4, K=2, init=slice) ---
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Total parameters: 1,498,613,760
+  Trainable parameters: 131,072
+  [MoE-slice] batch=1 in=256 out=32: 2.79s, 3075 MB peak, 11.5 tok/s
+
+  Expert load distribution:
+    Layer 0: ['12%', '39%', '17%', '32%'] (total=72)
+    Layer 1: ['39%', '26%', '26%', '8%'] (total=72)
+    Layer 2: ['47%', '1%', '3%', '49%'] (total=72)
+    Layer 3: ['12%', '47%', '40%', '0%'] (total=72)
+
+--- MoE (N=4, K=2, init=lora) ---
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Total parameters: 1,500,710,912
+  Trainable parameters: 2,228,224
+  [MoE-lora] batch=1 in=256 out=32: 2.81s, 3082 MB peak, 11.4 tok/s
+
+  Expert load distribution:
+    Layer 0: ['15%', '31%', '31%', '24%'] (total=72)
+    Layer 1: ['26%', '26%', '18%', '29%'] (total=72)
+    Layer 2: ['19%', '29%', '35%', '17%'] (total=72)
+    Layer 3: ['22%', '25%', '22%', '31%'] (total=72)
+
+======================================================================
+ALL BENCHMARKS COMPLETE
+======================================================================

@@ -1,0 +1,77 @@
+======================================================================
+MoE Fine-tuning Experiment
+======================================================================
+Config: N=4, K=2, init_mode=slice, train_samples=200, epochs=2
+
+[1/4] Loading dense baseline model...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+
+--- Dense Baseline ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  Use the following words to describe the poem. 1. The poem is about. 2. The poem is about. 3. The poem is about. 4. The 
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A:  Use the 5-paragraph format. Write a 5-paragraph essay.
+Read the following passage and write a 5-paragraph essay using t
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Email examples, tips, and samples.
+What is a job offer email?
+A job offer email is a formal email that is sent to a can
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:  5. If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  What is the difference between positive and negative reinforcement? How do you know when a child is engaged in operant 
+
+
+[2/4] Converting to MoE (before fine-tuning)...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+--- MoE (Before Training) ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A: reasonablereasonablereasonablereasonable reasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonab
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A: dynamiciversityiversity tones Ow Bark Surprise Pulitzer Bark Lv住 Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy D
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Conduct unreasonable unreasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonablereasonablereaso
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A: arkinreasonable reasonablereasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonablereasonablerea
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  Conduct Conduct conduct conduct尊尊尊工程His Create Buildilenamesnyű reasonable Understand Performanceilenamesilenamesilenam
+
+Expert load before training (first 4 layers):
+  Layer 0: ['18%', '26%', '21%', '36%']
+  Layer 1: ['15%', '34%', '13%', '38%']
+  Layer 2: ['3%', '43%', '35%', '19%']
+  Layer 3: ['49%', '0%', '30%', '21%']
+
+[3/4] Fine-tuning MoE router + experts...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Trainable params: 131,072 / 1,498,613,760 (0.01%)
+Traceback (most recent call last):
+  File "/root/autodl-tmp/llama-efficient-inference/train_moe.py", line 366, in <module>
+    main()
+  File "/root/autodl-tmp/llama-efficient-inference/train_moe.py", line 275, in main
+    losses = train_moe_router(
+             ^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/llama-efficient-inference/train_moe.py", line 154, in train_moe_router
+    loss.backward()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_tensor.py", line 647, in backward
+    torch.autograd.backward(
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py", line 829, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

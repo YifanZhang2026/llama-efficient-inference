@@ -5,7 +5,7 @@ data/
 checkpoints/
 *.pth
 *.pt
-prof/
-logs/
+/prof/
+/logs/
 results/scratch.csv
-artifacts/
+/artifacts/

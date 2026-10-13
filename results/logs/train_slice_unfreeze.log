@@ -1,0 +1,134 @@
+======================================================================
+MoE Fine-tuning Experiment
+======================================================================
+Config: N=4, K=2, init_mode=slice, train_samples=200, epochs=2
+
+[1/4] Loading dense baseline model...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+
+--- Dense Baseline ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  Use the following words to describe the poem. 1. The poem is about. 2. The poem is about. 3. The poem is about. 4. The 
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A:  Use the 5-paragraph format. Write a 5-paragraph essay.
+Read the following passage and write a 5-paragraph essay using t
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Email examples, tips, and samples.
+What is a job offer email?
+A job offer email is a formal email that is sent to a can
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:  5. If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  What is the difference between positive and negative reinforcement? How do you know when a child is engaged in operant 
+
+
+[2/4] Converting to MoE (before fine-tuning)...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+--- MoE (Before Training) ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A: reasonablereasonablereasonablereasonable reasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonab
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A: dynamiciversityiversity tones Ow Bark Surprise Pulitzer Bark Lv住 Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy D
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Conduct unreasonable unreasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonablereasonablereaso
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A: arkinreasonable reasonablereasonable reasonablereasonablereasonablereasonablereasonablereasonablereasonablereasonablerea
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  Conduct Conduct conduct conduct尊尊尊工程His Create Buildilenamesnyű reasonable Understand Performanceilenamesilenamesilenam
+
+Expert load before training (first 4 layers):
+  Layer 0: ['18%', '26%', '21%', '36%']
+  Layer 1: ['15%', '34%', '13%', '38%']
+  Layer 2: ['3%', '43%', '35%', '19%']
+  Layer 3: ['49%', '0%', '30%', '21%']
+
+[3/4] Fine-tuning MoE router + experts...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Trainable params: 805,437,440 / 1,498,613,760 (53.75%)
+  Epoch 1, step 50/200, loss=10.8051
+  Epoch 1, step 100/200, loss=10.0083
+  Epoch 1, step 150/200, loss=9.5720
+  Epoch 1, step 200/200, loss=9.2276
+Epoch 1/2: loss=9.2276, time=278.5s
+  Epoch 2, step 50/200, loss=9.8606
+  Epoch 2, step 100/200, loss=9.6979
+  Epoch 2, step 150/200, loss=9.5234
+  Epoch 2, step 200/200, loss=9.3531
+Epoch 2/2: loss=9.3531, time=279.9s
+Training losses: [9.227599696577201, 9.353058061468623]
+
+[4/4] Evaluating fine-tuned MoE...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+--- MoE (After Training) ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  the the the that that’’,,,,,,,,,,,,,,,,, and,,, a,,,, that,,,,,,,,,,,,,,,, tended tend tend tend tend tend,, tended ten
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A: ...., and we in in to that even even even even even even even even even even even even even even even even even even eve
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  options options options options options options options options options options options options options options options
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:   of,,  that, you you in, that you you you you you the and, that  your you you you you you you and ,  You you you you yo
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  your your your your your your your your your your your your your your your your your your your your your your your your
+
+Expert load after training (first 4 layers):
+  Layer 0: ['12%', '27%', '35%', '27%']
+  Layer 1: ['36%', '32%', '24%', '9%']
+  Layer 2: ['27%', '21%', '27%', '25%']
+  Layer 3: ['25%', '2%', '45%', '28%']
+
+======================================================================
+COMPARISON: Side-by-side on 5 prompts
+======================================================================
+
+Q: Compose a short poem about the beauty of mathematics.
+  Dense:       Use the following words to describe the poem. 1. The poem is about. 2. The poem is about. 3. The po
+  MoE-before: reasonablereasonablereasonablereasonable reasonable reasonablereasonablereasonablereasonablereasonab
+  MoE-after:   the the the that that’’,,,,,,,,,,,,,,,,, and,,, a,,,, that,,,,,,,,,,,,,,,, tended tend tend tend te
+
+Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  Dense:       Use the 5-paragraph format. Write a 5-paragraph essay.
+Read the following passage and write a 5-par
+  MoE-before: dynamiciversityiversity tones Ow Bark Surprise Pulitzer Bark Lv住 Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy Dy
+  MoE-after:  ...., and we in in to that even even even even even even even even even even even even even even eve
+
+Q: Draft a professional email declining a job offer politely.
+  Dense:       Email examples, tips, and samples.
+What is a job offer email?
+A job offer email is a formal email t
+  MoE-before:  Conduct unreasonable unreasonable reasonablereasonablereasonablereasonablereasonablereasonablereaso
+  MoE-after:   options options options options options options options options options options options options opt
+
+Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  Dense:       5. If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning. 5. 5. 5. 5.
+  MoE-before: arkinreasonable reasonablereasonable reasonablereasonablereasonablereasonablereasonablereasonablerea
+  MoE-after:    of,,  that, you you in, that you you you you you the and, that  your you you you you you you and ,
+
+Q: What are three key differences between classical and operant conditioning?
+  Dense:       What is the difference between positive and negative reinforcement? How do you know when a child is
+  MoE-before:  Conduct Conduct conduct conduct尊尊尊工程His Create Buildilenamesnyű reasonable Understand Performanceil
+  MoE-after:   your your your your your your your your your your your your your your your your your your your your
+
+======================================================================
+DONE
+======================================================================
