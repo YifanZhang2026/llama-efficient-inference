@@ -30,7 +30,7 @@
 
 ## E0 原始 benchmark 复现（`run_benchmark.py`，未修改）
 
-`logs/benchmark_orig.log`，2026-10-13。计时为 `generate()` 端到端（prefill + 32 步 decode + 采样），无 warmup，单次运行。
+`logs/benchmark_orig.log`，2026-10-13（原始日志已被重跑覆盖，见下方"复现"）。计时为 `generate()` 端到端（prefill + 32 步 decode + 采样），无 warmup，单次运行。
 
 | input_len=256, output_len=32 | bs=1 | bs=8 | bs=16 |
 |---|---:|---:|---:|
@@ -50,6 +50,7 @@
 - 去掉 warmup 后 FP16 bs=1/8/16 ≈ 0.56/0.68/0.72 s，bs 增大 16× 时间只多 ~30%。
 - bs=1 FP16 约 0.56 s / 32 ≈ 17 ms/step（含 prefill 摊入），而权重 ~2.5 GB / 1555 GB/s ≈ 1.6 ms → 离带宽下限差一个数量级，原因待 profiler 验证（E4/E5）。
 - INT4 比 FP16 慢 2.5–2.8×；MoE 比 Dense 慢 ~5×。
+- **复现**：2026-10-14 02:31 独立重跑一次（`results/logs/benchmark_orig_rerun_1014.log`）：FP16 1.11 / 0.70 / 0.73 s，INT4 1.56 / 1.66 / 1.73 s，Dense 0.57 s，MoE 2.79 / 2.81 s；峰值显存逐 MB 相同。冷启动现象（FP16 bs=1 ≈ 2× Dense）再次出现。
 
 ---
 
