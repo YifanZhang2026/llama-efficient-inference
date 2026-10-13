@@ -16,7 +16,7 @@ intended update with what actually lands in the weights:
 Configs (each on a freshly converted model):
   slice           router only (fp16)                  -- train_moe.py default
   slice-unfreeze  router + all expert weights (fp16)  -- --unfreeze-experts
-  lora            router + LoRA A/B (fp32), control
+  lora            router + LoRA A/B (fp32), control; A and B reported separately
 
 Note: train_moe.py consumes RNG (model builds, sampling) before converting the
 model it trains, so the router init here differs from the logged runs.
@@ -67,16 +67,17 @@ def param_groups(model, unfreeze, lr_router, lr_expert):
     """Same trainable set and lrs as train_moe.train_moe_router, tagged by kind."""
     for p in model.parameters():
         p.requires_grad = False
-    groups = {"router": [], "expert": [], "lora": []}
+    groups = {"router": [], "expert": [], "lora_A": [], "lora_B": []}
     for layer in model.layers:
         ff = layer.feed_forward
         groups["router"] += list(ff.router.parameters())
         if isinstance(ff, LoRAMoEFeedForward):
-            groups["lora"] += [p for e in ff.lora_experts for p in e.parameters()]
+            groups["lora_A"] += [e.lora_A.weight for e in ff.lora_experts]
+            groups["lora_B"] += [e.lora_B.weight for e in ff.lora_experts]
         elif isinstance(ff, MoEFeedForward) and unfreeze:
             groups["expert"] += [p for ew in (ff.expert_w1, ff.expert_w2, ff.expert_w3)
                                  for e in ew for p in e.parameters()]
-    lrs = {"router": lr_router, "expert": lr_expert, "lora": lr_expert}
+    lrs = {"router": lr_router, "expert": lr_expert, "lora_A": lr_expert, "lora_B": lr_expert}
     groups = {k: v for k, v in groups.items() if v}
     for ps in groups.values():
         for p in ps:
