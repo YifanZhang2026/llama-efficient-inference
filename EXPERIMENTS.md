@@ -66,6 +66,32 @@
 
 推导：
 
+### E1b INT4 质量（PPL / next-token acc）
+
+`eval_ppl.py --group-sizes 32 64 128 --ctx 2048 1024`，`logs/eval_ppl_1014.log`，`results/ppl.csv`，2026-10-14。INT4 = 本仓库的 RTN（每组 min/max 非对称，scale / zero_point 存 FP16），不做校准。所有模型在同一批片段上逐段对比；agree = INT4 与 FP16 argmax 相同的比例，KL = 每 token 平均 KL(P_fp16 ‖ P_int4)（nats）。
+
+口径：
+- **Alpaca[200:300]**：与 `eval_moe.py` 相同（每条样本单独，bos+eos，截断 128 token），5711 tokens。FP16 结果 9.6602 / 51.37% 与 E7 的 Dense 行一致。
+- **WikiText-2 test**（raw）：`"\n\n".join(test["text"])` 整体 tokenize（只在最开头加 BOS），共 289,082 tokens，切成不重叠的 ctx 窗口，丢弃尾部，每个窗口预测后 ctx−1 个 token，PPL = exp(总 NLL / 预测 token 数)。GPTQ / AWQ 用的是同一种切法，但除以 ctx（差 <0.1%）。
+- 模型代码没有 Llama 3.1+ 的 RoPE scaling（P3），所以 WikiText 的绝对 PPL 可能与 HF 参考值略有不同；FP16 与 INT4 共用同一份模型代码，差值不受影响。
+
+| | Alpaca PPL | acc | agree | KL | WikiText-2 ctx=2048 PPL | acc | agree | KL | ctx=1024 PPL | acc | agree | KL |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| FP16 | 9.66 | 51.37% | – | – | 9.89 | 51.71% | – | – | 11.08 | 50.36% | – | – |
+| INT4 g32 | 10.30 | 50.27% | 83.94% | 0.088 | 11.03 | 50.09% | 83.06% | 0.110 | 12.38 | 48.72% | 82.65% | 0.112 |
+| INT4 g64 | 10.55 | 49.92% | 79.92% | 0.119 | 11.52 | 49.45% | 80.56% | 0.154 | 12.90 | 48.12% | 80.40% | 0.153 |
+| INT4 g128（默认） | 11.03 | 49.87% | 80.00% | 0.157 | 12.29 | 48.51% | 77.27% | 0.217 | 13.71 | 47.19% | 77.23% | 0.214 |
+
+预测：
+
+观察（数字层面，解释待写）：
+- 默认 g128 在 WikiText-2 ctx=2048 上 PPL 9.89 → 12.29（**+2.40，+24%**），acc −3.2 个百分点；Alpaca 上 9.66 → 11.03（+14%）。
+- group 越小越好：WikiText ctx=2048 时 g128 / g64 / g32 的 ΔPPL 分别是 +2.40 / +1.63 / +1.14。KL 随 group size 单调增大（g32 → g128 约翻倍）；agree 在 Alpaca 上 g64 与 g128 基本相同（79.92% vs 80.00%）。
+- 即使是 g32，也有 **~17% 的位置 top-1 预测与 FP16 不同**。
+- ctx 1024 → 2048：FP16 PPL 11.08 → 9.89（上下文更长）；INT4 的 ΔPPL 两种 ctx 下相近（g128：+2.63 vs +2.40），KL 几乎不变。
+
+解释：
+
 ### E2 FP16 vs INT4 性能（input_len=256, output_len=32）
 
 `bench.py`，warmup 3，iters 10，2026-10-13。
