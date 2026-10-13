@@ -67,18 +67,30 @@
 
 ### E2 FP16 vs INT4 性能（input_len=256, output_len=32）
 
+`bench.py`，warmup 3，iters 10，2026-10-13。
+
 | | bs=1 | bs=8 | bs=16 |
 |---|---:|---:|---:|
-| FP16 peak mem (MB) | | | |
-| FP16 prefill (ms) | | | |
-| FP16 decode (ms/token) | | | |
-| INT4 peak mem (MB) | | | |
-| INT4 prefill (ms) | | | |
-| INT4 decode (ms/token) | | | |
+| FP16 prefill (ms) | 17.71 | 40.91 | 87.06 |
+| FP16 decode (ms/step, median) | 14.96 | 16.33 | 15.94 |
+| FP16 e2e (ms) / cold | 482.8 / 982.6 | 529.5 / 561.1 | 562.4 / 567.0 |
+| FP16 static / peak mem (MB) | 2869 / 3067 | 2941 / 4454 | 3027 / 6050 |
+| INT4 prefill (ms) | 46.18 | 78.78 | 124.31 |
+| INT4 decode (ms/step, median) | 40.46 | 43.53 | 45.59 |
+| INT4 e2e (ms) / cold | 1300.6 / 1569.4 | 1422.4 / 1424.9 | 1532.8 / 1532.5 |
+| INT4 static / peak mem (MB) | 1137 / 4536 | 1210 / 5476 | 1290 / 6558 |
 
 预测：
 
-观察：
+观察（数字层面，解释待写）：
+- **decode 几乎不随 bs 变**：FP16 15.0 → 16.3 → 15.9 ms，INT4 40.5 → 43.5 → 45.6 ms。
+- **FP16 decode 15 ms/step，而只读权重的下限 ≈ 2.5 GB / 1555 GB/s ≈ 1.6 ms**，差 ~9×；且 bs=1 prefill（256 token）17.7 ms ≈ 1 步 decode 的耗时。
+- **FP16 prefill 吞吐**：bs=16（4096 token）87 ms；按 2 × 1.5 B 参数 × 4096 ≈ 12.3 TFLOP 算 ≈ 141 TFLOPS，接近 GEMM 冒烟测试测到的 ~149 TFLOPS。bs=1 只有 ~43 TFLOPS。
+- **INT4 每次 forward 多出一个近似固定的开销**：decode 多 ~25.5 ms，prefill 多 ~28 ms，与 token 数基本无关。
+- **static**：INT4 1137 MB vs FP16 2869 MB（−60%）。bs 每 +1，static 涨 ~9.4 MB = 该序列的 KV cache。
+- **peak − static**：FP16 198 / 1513 / 3023 MB ≈ 每条序列 ~190 MB；INT4 bs=1 是 3399 MB。
+- **cold**：FP16 进程内首轮比稳态多 ~500 ms，与 E0 中的 0.54 s 吻合（P1）。
+- `generate()` 端到端（E0 Dense 0.56 s）比 `bench.py` 的 483 ms 多 ~80 ms：top-p 采样、tokenizer 等 forward 以外的开销。
 
 ### E3 INT4 峰值显存来源
 
@@ -120,9 +132,11 @@
 | Trainable params | 0 | 131,072 | 2,228,224 |
 | Peak mem (MB) | 3074 | 3075 | 3082 |
 | 推理时间 (s)，bs=1, in=256, out=32（E0） | 0.56 | 2.71 | 2.83 |
+| prefill (ms)（`bench.py`） | 17.71 | 1695.58 | 1695.96 |
+| decode (ms/step)（`bench.py`） | 14.96 | 24.24 | 27.05 |
 | 生成速度 (tok/s)，eval_moe，10 条短 prompt，out=32 | 53.5–55.1 | 23.7–31.8 | 28.7–28.9 |
 
-观察：benchmark（prompt 256）里 MoE 比 Dense 慢 ~5×，eval_moe（短 prompt）里只慢 ~2×。
+观察：benchmark（prompt 256）里 MoE 比 Dense 慢 ~5×，eval_moe（短 prompt）里只慢 ~2×。`bench.py` 拆开后：**prefill 慢 ~96×（17.7 ms → 1696 ms），decode 只慢 1.6–1.8×**。
 
 ### E7 训练前的 PPL（刚转换完）
 
