@@ -31,6 +31,7 @@ Paths default to `./ckpt` and `./data`; override with `LLAMA_CKPT_DIR` and `DATA
 | `python inference.py` | Smoke test: load the model and generate |
 | `python check_impl.py` | Correctness checks for quantization and MoE |
 | `python bench.py --mode {fp16,int4,moe-slice,moe-lora} --bs 1 8 16` | Prefill / per-step decode latency and peak memory (warmup, CUDA events, CSV to `results/`) |
+| `python mem_snapshot.py --mode int4 --bs 1` | What is alive on the GPU at peak memory (PyTorch memory snapshot, viewable at pytorch.org/memory_viz) |
 | `python run_benchmark.py` | FP16 vs INT4, dense vs MoE: end-to-end `generate()` runtime and peak memory |
 | `python train_moe.py --init-mode {slice,lora}` | Fine-tune the MoE on Alpaca; writes `checkpoints/moe_finetuned.pt` |
 | `python eval_moe.py --init-mode {slice,lora}` | Perplexity, next-token accuracy, throughput, expert load |
