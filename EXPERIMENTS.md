@@ -95,9 +95,19 @@
 ### E3 INT4 峰值显存来源
 
 - 预测：
-- 测量方法：
-- 结果（哪一层 / 哪个 tensor / 多大）：
-- 对照实验：
+- 测量方法：`mem_snapshot.py`（PyTorch memory snapshot，warmup 后记录 1 次 prefill + 3 步 decode，回放 alloc/free 找峰值时刻仍存活的块；回放峰值与 `max_memory_allocated` 误差 ≤ 1 MB）。快照：`prof/mem_{int4_bs1,fp16_bs1,fp16_bs16}.pickle`。
+- 结果：
+
+| 配置 | static | peak | 峰值时多出的块（大小 · 分配位置） |
+|---|---:|---:|---|
+| INT4 bs=1 | 1145 | 4535 | 1002 MB · `quantize.py:101` `w_int4.float()`；1002 + 1002 MB · `quantize.py:102` `(w_int4 − zp)` 的临时结果和 `× scale` 的结果；125 + 125 MB · `quantize.py:95/96` `w_even` / `w_odd`；125 MB · `model.py:455` 上一步的 fp32 logits |
+| FP16 bs=1 | 2877 | 3066 | 125 MB · `model.py:455` fp32 logits；63 MB · 同行 fp16 logits（`.float()` 之前） |
+| FP16 bs=16 | 2998 | 6021 | 2004 MB + 1002 MB · `model.py:455` 同上，×16 |
+
+- 1002 MB = 128256 × 2048 × 4 B，125 MB = 128256 × 1024 × 1 B → INT4 峰值完全来自**形状最大的那一层（lm_head）的 dequant 临时张量**：同时存活 3 份 fp32 全尺寸张量 + 2 份 uint8 半尺寸 nibble。不是"整个模型物化了一份 FP16 权重"（旧报告的解释）。
+- `w_even` / `w_odd` 在函数返回前一直被局部变量引用，`w_int4.float()` 的结果在算出 `w_fp16` 后也还被引用。
+- FP16 的 peak − static 全部是 prefill 对**全部 256 个位置**算出的 logits（fp16 一份 + `.float()` 后 fp32 一份），而生成只用最后一个位置；每条序列 256 × 128256 × (2 + 4) B ≈ 188 MB，与 E2 中"每 +1 bs 涨 ~190 MB"吻合。
+- 对照实验（改进阶段）：
 
 | 改动 | bs=1 peak mem (MB) |
 |---|---:|
