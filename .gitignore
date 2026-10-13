@@ -5,3 +5,6 @@ data/
 checkpoints/
 *.pth
 *.pt
+prof/
+logs/
+results/scratch.csv
