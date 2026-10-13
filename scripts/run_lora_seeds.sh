@@ -1,8 +1,11 @@
 #!/bin/bash
-# LoRA MoE, 6 epochs, seeds 1-3 (seed 42 = lora_ep6 from run_sweep.sh).
-# Each seed has its own checkpoint, so the three train -> eval chains run in
-# parallel on one GPU. Generation speeds in these logs are NOT comparable to
-# other runs (three processes share the GPU and CPU); PPL / acc are unaffected.
+# LoRA MoE, 6 epochs, one train -> eval chain per seed, all in parallel on one
+# GPU (each seed has its own checkpoint). Default seeds: 1 2 3 42. Seed 42
+# repeats lora_ep6 from run_sweep.sh (run alone): if its losses / PPL / acc
+# match bit for bit, running in parallel did not change the numerics.
+# Epoch times and generation speeds in these logs are NOT comparable to other
+# runs (the processes share the GPU and CPU).
+# Usage: bash scripts/run_lora_seeds.sh [seed ...]
 cd "$(dirname "$0")/.."
 mkdir -p logs checkpoints
 run() {  # seed
@@ -12,7 +15,8 @@ run() {  # seed
   && echo "== seed $s done $(date +%T)" || echo "!! seed $s failed $(date +%T)"
 }
 echo "start $(date +%T)"
-for s in 1 2 3; do run "$s" & done
+seeds=("$@"); [ ${#seeds[@]} -eq 0 ] && seeds=(1 2 3 42)
+for s in "${seeds[@]}"; do run "$s" & done
 wait
 grep -H "Perplexity\|Next-token" logs/eval_lora_ep6_s*.log
 echo "ALL DONE $(date +%T)"
