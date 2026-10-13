@@ -1,0 +1,63 @@
+======================================================================
+Quantitative MoE Evaluation
+Eval set: 100 held-out Alpaca samples
+======================================================================
+
+[1/3] Dense Baseline...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+  Perplexity: 9.66
+  Next-token accuracy: 51.37%
+  Evaluated on 5711 tokens
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Generation speed: 56.0 tok/s (5.72s for 10 prompts)
+
+[2/3] MoE Before Training (init=lora, N=4, K=2)...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Perplexity: 9.66
+  Next-token accuracy: 51.37%
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Generation speed: 24.1 tok/s (12.39s for 10 prompts)
+
+[3/3] MoE After Training...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Loaded fine-tuned weights from checkpoints/moe_lora_ep6_s42.pt
+  Training losses: [2.377277950391182, 2.372311362818338, 2.366930898918909, 2.3606781567774773, 2.353243181766754, 2.3438975872141263]
+  Perplexity: 9.36
+  Next-token accuracy: 52.20%
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+  Generation speed: 31.3 tok/s (9.91s for 10 prompts)
+  Expert load (first 4 layers):
+    Layer 0: ['25%', '21%', '34%', '21%']
+    Layer 1: ['30%', '10%', '19%', '40%']
+    Layer 2: ['13%', '30%', '19%', '37%']
+    Layer 3: ['29%', '46%', '16%', '9%']
+
+======================================================================
+RESULTS SUMMARY
+======================================================================
+
+Metric                    |        Dense | MoE (before) |  MoE (after)
+----------------------------------------------------------------------
+Perplexity ↓              |         9.66 |         9.66 |         9.36
+Next-token Acc ↑          |       51.37% |       51.37% |       52.20%
+Gen Speed (tok/s) ↑       |         56.0 |         24.1 |         31.3
+
+MoE-before vs Dense:
+  PPL change: 9.66 → 9.66 (↓ better)
+  Acc change: 51.37% → 51.37%
+
+MoE-after vs MoE-before:
+  PPL change: 9.66 → 9.36 (↓ better)
+  Acc change: 51.37% → 52.20%
+
+======================================================================
+DONE
+======================================================================

@@ -1,0 +1,34 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+  fp16: params + buffers = 2858.1 MB
+  int4_g32: params + buffers = 1237.7 MB
+  int4_g64: params + buffers = 1164.0 MB
+  int4_g128: params + buffers = 1127.2 MB
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 179941.10 examples/s]
+Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 736654.46 examples/s]
+Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 567430.04 examples/s]
+  wikitext2 test: 289082 tokens
+
+[alpaca ctx=128] (15 s)
+  fp16       PPL    9.6602 | acc 51.37% | 5711 tokens
+  int4_g32   PPL   10.2963 | acc 50.27% | 5711 tokens | agree 83.94% | KL 0.0875
+  int4_g64   PPL   10.5469 | acc 49.92% | 5711 tokens | agree 79.92% | KL 0.1187
+  int4_g128  PPL   11.0276 | acc 49.87% | 5711 tokens | agree 80.00% | KL 0.1572
+
+[wikitext2 ctx=2048] (79 s)
+  fp16       PPL    9.8862 | acc 51.71% | 288627 tokens
+  int4_g32   PPL   11.0278 | acc 50.09% | 288627 tokens | agree 83.06% | KL 0.1099
+  int4_g64   PPL   11.5163 | acc 49.45% | 288627 tokens | agree 80.56% | KL 0.1535
+  int4_g128  PPL   12.2879 | acc 48.51% | 288627 tokens | agree 77.27% | KL 0.2174
+
+[wikitext2 ctx=1024] (78 s)
+  fp16       PPL   11.0783 | acc 50.36% | 288486 tokens
+  int4_g32   PPL   12.3757 | acc 48.72% | 288486 tokens | agree 82.65% | KL 0.1118
+  int4_g64   PPL   12.8964 | acc 48.12% | 288486 tokens | agree 80.40% | KL 0.1534
+  int4_g128  PPL   13.7079 | acc 47.19% | 288486 tokens | agree 77.23% | KL 0.2140
+
+appended 12 rows to results/ppl.csv

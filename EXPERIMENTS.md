@@ -60,9 +60,11 @@
 
 | | 预测 (MB) | 实测 (MB) |
 |---|---:|---:|
-| FP16 | | |
-| INT4（params + buffers） | | |
-| 减少比例 | | |
+| FP16 | | 2858.1 |
+| INT4（params + buffers） | | 1127.2 |
+| 减少比例 | | 60.6% |
+
+实测：`eval_ppl.py` 的 `params + buffers`（`logs/eval_ppl_1014.log`），与 `run_benchmark.py` 的 `print_model_size` 一致（INT4：parameters 501.13 MB + buffers 626.08 MB）。不含 KV cache。其他 group size：g64 1164.0 MB，g32 1237.7 MB。
 
 推导：
 
@@ -361,6 +363,25 @@ loss 曲线图：
 - B=0 时 router 梯度的预测：
 - PPL 差异是否超过噪声（不同 seed / eval 子集）：
 
+#### E9a 训练 seed 方差（LoRA，6 epochs）
+
+`scripts/run_lora_seeds.sh`（seed 1 / 2 / 3 并行，seed 42 稍后单独启动、与它们同时运行），`logs/{train,eval}_lora_ep6_s{1,2,3,42}.log`，2026-10-14。其余配置同 E8b 的 lora_ep6。seed 影响 router 与 LoRA A 的初始化（训练数据顺序固定，不 shuffle）。
+
+| seed | epoch 1 → 6 loss | PPL | acc | acc − Dense |
+|---:|---|---:|---:|---:|
+| 1 | 2.3771 → 2.3717 → 2.3657 → 2.3591 → 2.3513 → 2.3419 | 9.36 | 52.32% | +0.95 pp |
+| 2 | 2.3772 → 2.3720 → 2.3664 → 2.3600 → 2.3528 → 2.3444 | 9.37 | 52.23% | +0.86 pp |
+| 3 | 2.3774 → 2.3726 → 2.3677 → 2.3622 → 2.3561 → 2.3488 | 9.41 | 52.11% | +0.74 pp |
+| 42 | 2.3773 → 2.3723 → 2.3669 → 2.3607 → 2.3532 → 2.3439 | 9.36 | 52.20% | +0.83 pp |
+| 均值 ± 标准差（n=4） | | 9.375 ± 0.024 | 52.22% ± 0.09 pp | +0.85 pp |
+
+Dense = 9.66 / 51.37%（每个 eval log 的 [1/3] 都重新测得同样的值）。
+
+- **并行不改变数值**：并行跑的 seed 42 与 E8b 中单独串行跑的 lora_ep6，6 个 epoch 的 loss 全精度逐位相同（`Training losses: [2.377277950391182, …, 2.3438975872141263]`），PPL / acc 也相同。并行只影响耗时（每 epoch 342–388 s vs 串行 233–239 s）。
+- 4 个 seed 的 acc 都比 Dense 高 0.74–0.95 pp；seed 间标准差 0.09 pp。
+- `eval_moe.py` 只打印 2 位小数的 PPL，所以 PPL 的 seed 方差分辨率有限。
+- 这里只量了**训练 seed** 的方差；评估集固定为同一组 5711 个 token，评估集抽样带来的不确定性（换一批 held-out 样本会怎样）没有量。
+
 ### E10 MoE 慢在哪
 
 - 预测同步次数（prefill 256 tokens）：
@@ -403,7 +424,26 @@ loss 曲线图：
 
 - **现象**：原始 benchmark 中 FP16 bs=1 = 1.10 s，bs=8 = 0.68 s；同配置的 Dense 行（后跑）= 0.56 s。
 - **最初假设**：
-- **验证实验**：
+- **验证实验**：`prof/fp16_bs1_full.nsys-rep`（`scripts/run_sweep.sh`，`nsys` 不带 capture range，抓整个进程；`bench.py --mode fp16 --bs 1 --iters 2` = warmup 3 + 计时 2，共 5 轮）。用 `nsys stats` 导出的 sqlite，按每轮 33 个 `cudaEventRecord` 切分各轮，逐轮比较（`logs/nsys_stats_fp16_full.txt` 是汇总表）。nsys 下各轮都变慢（每次 launch 的追踪开销），但首轮多出的量与不开 nsys 时一致：
+
+| | rep 0（cold） | rep 1 | rep 4 |
+|---|---:|---:|---:|
+| 整轮 CPU 时间 (ms) | 1312.8 | 800.0 | 751.3 |
+| prefill (ms) | **429.0** | 26.7 | 26.7 |
+| decode 第 1 步 (ms) | **141.9** | 24.4 | 24.2 |
+| decode 第 2 步 (ms) | 26.5 | 24.7 | 24.3 |
+| kernel 数 / GPU kernel 总时间 | 21,906 / 203.5 ms | 21,906 / 203.5 ms | 21,906 / 203.4 ms |
+| CUDA API 时间（主线程） | 443.3 ms | 179.6 ms | |
+| API 之外的 CPU 时间 | 869.5 ms | 620.4 ms | |
+
+rep 0 − rep 1 = +513 ms（不开 nsys 时 `bench.py` 的 cold − e2e ≈ 983 − 483 = 500 ms），**全部在 prefill（+402 ms）和 decode 第 1 步（+117 ms）**；从第 2 步起与稳态相同。GPU 侧工作完全一样（kernel 数、kernel 名称、GPU 时间都相同）。
+
+多出的 513 ms 的组成：
+- `cudaLaunchKernel` **+199 ms**，调用次数相同：几乎都来自 10 次"该 kernel 的第一次 launch"（比 rep 1 同位置慢 >0.2 ms 的只有这 10 次，合计 +195 ms）。prefill 里：`vectorized_elementwise_kernel` ×3（26.4 / 17.0 / 8.1 ms）、`softmax_warp_forward` 24.4 ms、`splitKreduce_kernel` 16.8 ms、`reduce_kernel` ×2（12.9 / 8.3 ms）、`triu_tril_kernel` 5.2 ms；decode 第 1 步：`indexSelectSmallIndex`（embedding 查表，单 token 时才用的 kernel）**75.6 ms**。
+- `cuLibraryLoadData` ×14，**+48.7 ms**，全在 prefill，集中在首轮 +210 → +318 ms（第一个 GEMM 前后）。rep 1 起不再出现。
+- `cuKernelGetFunction` +8.6 ms；`cudaMalloc` ×12 + `cudaFree` ×1，+6.5 ms（caching allocator 首次扩容）；`cuGetProcAddress` ×838、`cuInit` ×4、`cudaGetDriverEntryPoint` ×2 只在首轮出现，耗时可忽略。
+- **API 之外的 CPU 时间 +249 ms**（prefill +219，decode 第 1 步 +42）。最大的一段空隙 **115.6 ms** 在首轮 +95 ms 处：最后一次 `cuInit` 之后、第一次 `cuLibraryLoadData` 之前，期间没有任何 CUDA API 调用；另一段 16.7 ms 在 `cudaGetDriverEntryPoint` 与 `cuInit` 之间。采集时 `--sample=none`，没有 CPU 调用栈，无法直接看到这段时间里 CPU 在执行什么。
+- 首轮之前的 setup（建模型、`load_state_dict`）另有 1.7 s，其中 `cudaMemcpyAsync` ×147 共 630 ms（权重 H2D），不计入 cold_e2e。
 - **结论**：
 - **学到什么**：
 

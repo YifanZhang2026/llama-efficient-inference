@@ -1,0 +1,33 @@
+start 03:32:47
+== seed 3 done 04:17:53
+== seed 1 done 04:17:54
+== seed 2 done 04:18:52
+logs/eval_lora_ep6_s1.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s1.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s1.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s1.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s1.log:  Perplexity: 9.36
+logs/eval_lora_ep6_s1.log:  Next-token accuracy: 52.32%
+logs/eval_lora_ep6_s1.log:Perplexity ↓              |         9.66 |         9.66 |         9.36
+logs/eval_lora_ep6_s1.log:Next-token Acc ↑          |       51.37% |       51.37% |       52.32%
+logs/eval_lora_ep6_s2.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s2.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s2.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s2.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s2.log:  Perplexity: 9.37
+logs/eval_lora_ep6_s2.log:  Next-token accuracy: 52.23%
+logs/eval_lora_ep6_s2.log:Perplexity ↓              |         9.66 |         9.66 |         9.37
+logs/eval_lora_ep6_s2.log:Next-token Acc ↑          |       51.37% |       51.37% |       52.23%
+logs/eval_lora_ep6_s3.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s3.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s3.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s3.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s3.log:  Perplexity: 9.41
+logs/eval_lora_ep6_s3.log:  Next-token accuracy: 52.11%
+logs/eval_lora_ep6_s3.log:Perplexity ↓              |         9.66 |         9.66 |         9.41
+logs/eval_lora_ep6_s3.log:Next-token Acc ↑          |       51.37% |       51.37% |       52.11%
+logs/eval_lora_ep6_s42.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s42.log:  Next-token accuracy: 51.37%
+logs/eval_lora_ep6_s42.log:  Perplexity: 9.66
+logs/eval_lora_ep6_s42.log:  Next-token accuracy: 51.37%
+ALL DONE 04:18:52

@@ -1,0 +1,176 @@
+======================================================================
+MoE Fine-tuning Experiment
+======================================================================
+Config: N=4, K=2, init_mode=lora, train_samples=200, epochs=6, seed=42
+
+[1/4] Loading dense baseline model...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+
+--- Dense Baseline ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  Use the following words to describe the poem. 1. The poem is about. 2. The poem is about. 3. The poem is about. 4. The 
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A:  Use the 5-paragraph format. Write a 5-paragraph essay.
+Read the following passage and write a 5-paragraph essay using t
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Email examples, tips, and samples.
+What is a job offer email?
+A job offer email is a formal email that is sent to a can
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:  5. If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5. 5
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  What is the difference between positive and negative reinforcement? How do you know when a child is engaged in operant 
+
+
+[2/4] Converting to MoE (before fine-tuning)...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+--- MoE (Before Training) ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  Use the following rules as a guideline for your poem.
+The poem must contain at least one mathematical term.
+The poem mu
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A:  The paragraph should be at least 150 words long and use at least 3 sources. Use a minimum of 3 sources in your body par
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Here’s a sample email that you can use to politely decline a job offer.
+Dear Mr. [Name],
+I would like to decline your o
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:  Round your answer to the nearest tenth of a mile.
+A. 10 miles
+B. 25 miles
+Answer: A
+Explanation: The distance traveled 
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  (Choose three.)
+A. Classical conditioning involves the presentation of a neutral stimulus (CS) followed by a conditione
+
+Expert load before training (first 4 layers):
+  Layer 0: ['18%', '26%', '21%', '36%']
+  Layer 1: ['41%', '15%', '27%', '17%']
+  Layer 2: ['27%', '33%', '17%', '24%']
+  Layer 3: ['30%', '22%', '17%', '31%']
+
+[3/4] Fine-tuning MoE router + experts...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+Trainable params: 2,228,224 / 1,500,710,912 (0.15%)
+  Epoch 1, step 50/200, loss=2.2378
+  Epoch 1, step 100/200, loss=2.3642
+  Epoch 1, step 150/200, loss=2.3721
+  Epoch 1, step 200/200, loss=2.3773
+Epoch 1/6: loss=2.3773, time=375.8s
+  Epoch 2, step 50/200, loss=2.2338
+  Epoch 2, step 100/200, loss=2.3593
+  Epoch 2, step 150/200, loss=2.3673
+  Epoch 2, step 200/200, loss=2.3723
+Epoch 2/6: loss=2.3723, time=374.8s
+  Epoch 3, step 50/200, loss=2.2293
+  Epoch 3, step 100/200, loss=2.3542
+  Epoch 3, step 150/200, loss=2.3622
+  Epoch 3, step 200/200, loss=2.3669
+Epoch 3/6: loss=2.3669, time=373.9s
+  Epoch 4, step 50/200, loss=2.2240
+  Epoch 4, step 100/200, loss=2.3482
+  Epoch 4, step 150/200, loss=2.3562
+  Epoch 4, step 200/200, loss=2.3607
+Epoch 4/6: loss=2.3607, time=375.6s
+  Epoch 5, step 50/200, loss=2.2181
+  Epoch 5, step 100/200, loss=2.3413
+  Epoch 5, step 150/200, loss=2.3492
+  Epoch 5, step 200/200, loss=2.3532
+Epoch 5/6: loss=2.3532, time=374.9s
+  Epoch 6, step 50/200, loss=2.2107
+  Epoch 6, step 100/200, loss=2.3326
+  Epoch 6, step 150/200, loss=2.3404
+  Epoch 6, step 200/200, loss=2.3439
+Epoch 6/6: loss=2.3439, time=361.5s
+Training losses: [2.377277950391182, 2.372311362818338, 2.366930898918909, 2.3606781567774773, 2.353243181766754, 2.3438975872141263]
+
+[4/4] Evaluating fine-tuned MoE...
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+--- MoE (After Training) ---
+  Q: Compose a short poem about the beauty of mathematics.
+  A:  Your poem must contain at least 10 lines. The poem must be typed, and must include a title and a line of poetry.
+
+  Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  A:  You can use examples from your own life or from the lives of others. Support your argument with examples and facts.
+Wri
+
+  Q: Draft a professional email declining a job offer politely.
+  A:  Learn how to politely decline a job offer and never accept a job offer again. Learn how to politely decline a job offer
+
+  Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  A:  (Hint: Use a diagram to show the train's distance traveled.)
+This problem is asking for the distance traveled by a trai
+
+  Q: What are three key differences between classical and operant conditioning?
+  A:  What are three key differences between classical and operant conditioning?
+What are three key differences between class
+
+Expert load after training (first 4 layers):
+  Layer 0: ['25%', '21%', '34%', '21%']
+  Layer 1: ['30%', '10%', '19%', '40%']
+  Layer 2: ['13%', '30%', '19%', '37%']
+  Layer 3: ['29%', '46%', '16%', '9%']
+
+======================================================================
+COMPARISON: Side-by-side on 5 prompts
+======================================================================
+
+Q: Compose a short poem about the beauty of mathematics.
+  Dense:       Use the following words to describe the poem. 1. The poem is about. 2. The poem is about. 3. The po
+  MoE-before:  Use the following rules as a guideline for your poem.
+The poem must contain at least one mathematic
+  MoE-after:   Your poem must contain at least 10 lines. The poem must be typed, and must include a title and a li
+
+Q: Write a persuasive paragraph arguing that reading books is better than watching 
+  Dense:       Use the 5-paragraph format. Write a 5-paragraph essay.
+Read the following passage and write a 5-par
+  MoE-before:  The paragraph should be at least 150 words long and use at least 3 sources. Use a minimum of 3 sour
+  MoE-after:   You can use examples from your own life or from the lives of others. Support your argument with exa
+
+Q: Draft a professional email declining a job offer politely.
+  Dense:       Email examples, tips, and samples.
+What is a job offer email?
+A job offer email is a formal email t
+  MoE-before:  Here’s a sample email that you can use to politely decline a job offer.
+Dear Mr. [Name],
+I would li
+  MoE-after:   Learn how to politely decline a job offer and never accept a job offer again. Learn how to politely
+
+Q: If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reason
+  Dense:       5. If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning. 5. 5. 5. 5.
+  MoE-before:  Round your answer to the nearest tenth of a mile.
+A. 10 miles
+B. 25 miles
+Answer: A
+Explanation: Th
+  MoE-after:   (Hint: Use a diagram to show the train's distance traveled.)
+This problem is asking for the distanc
+
+Q: What are three key differences between classical and operant conditioning?
+  Dense:       What is the difference between positive and negative reinforcement? How do you know when a child is
+  MoE-before:  (Choose three.)
+A. Classical conditioning involves the presentation of a neutral stimulus (CS) foll
+  MoE-after:   What are three key differences between classical and operant conditioning?
+What are three key diffe
+
+======================================================================
+DONE
+======================================================================
