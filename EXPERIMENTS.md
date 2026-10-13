@@ -107,11 +107,25 @@
 
 ### E4 INT4 时间花在哪（profiler）
 
-| kernel / op | 时间占比 | 备注 |
-|---|---:|---|
-| | | |
+nsys：`prof/int4_bs1.nsys-rep`（bs=1，1 次 prefill + 31 步 decode，warmup 之后）。GPU kernel 总时间 ≈ 32.0 ms / 2.5% ≈ **1.27 s**（FP16 同配置 ≈ 0.20 s）。
 
-结论：
+| kernel（推断对应的 dequant 步骤） | 时间占比 | 次数 | 次数 / forward |
+|---|---:|---:|---:|
+| `elementwise_kernel<128,2>` nocast（减 zero_point / 乘 scale） | 19.3% | 4672 | 146 |
+| `elementwise_kernel<128,2>` nocast | 19.2% | 3616 | 113 |
+| `direct_copy`（交错写回 `w_int4[:, 0::2]` / `.float()`） | 19.1% | 13456 | 420.5 |
+| `float16_copy`（`.half()` 等） | 13.8% | 6208 | 194 |
+| `elementwise_kernel<128,4>` | 12.7% | 7232 | 226 |
+| `AUnaryFunctor<uchar>`（`& 0x0F`） | 4.6% | 7232 | 226 |
+| `BUnaryFunctor<uchar>`（`>> 4`） | 2.1% | 3616 | 113 |
+| **以上 dequant 相关合计** | **~90.8%** | | |
+| GEMM / GEMV（含 lm_head） | ~6.2% | | |
+
+- 量化的 Linear 共 16 × 7 + 1（lm_head）= **113** 个；多个 kernel 的次数 / forward 正好是 113 的倍数 → 每个 Linear 每次 forward 都完整 dequant 一遍。
+- 单个 kernel 最长 ~1.57 ms：形状最大的 lm_head（128256 × 2048）。
+- GPU 忙碌 ≈ 1.27 s / 32 ≈ **39.6 ms / forward**，与 decode 实测 40.5 ms/step 几乎相等。
+
+结论：INT4 时间 ~91% 花在 dequant 的逐元素 kernel 上，矩阵乘本身只占 ~6%。且 **INT4 decode 是 GPU-bound**（GPU 几乎不空闲），与 FP16 的 launch-bound 相反：dequant 把每步 GPU 工作从 ~6 ms 撑到 ~40 ms，远超 CPU 发 kernel 的 ~15 ms。
 
 ### E5 Roofline：decode 离带宽上限多远
 
@@ -220,7 +234,16 @@ loss 曲线图：
 ### E10 MoE 慢在哪
 
 - 预测同步次数（prefill 256 tokens）：
-- profiler 实测同步次数 / 占时：
+- nsys 实测（`prof/moelora_bs1.nsys-rep`，MoE-LoRA bs=1，1 次 prefill + 31 步 decode）：
+
+| CUDA API | 次数 | 总时间 | 对照 FP16 |
+|---|---:|---:|---:|
+| `cudaLaunchKernel` | 109,890 | 761 ms | 21,602 |
+| `cudaMemcpyAsync` | 19,392 | 198 ms | 1,024 |
+| `cudaStreamSynchronize` | **9,184** | 105 ms | 0 |
+
+- 9,184 = 256 × 2 × 16（prefill：token × top-K × 层）+ 31 × 1 × 2 × 16（decode）= 8,192 + 992，**精确吻合**。
+- 19,392 = 2 × 9,184 + 1,024（1,024 与 FP16 相同，是 KV cache 写入）。
 - 结论：
 
 ### E11 Expert 负载分布
