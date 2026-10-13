@@ -8,3 +8,4 @@ checkpoints/
 prof/
 logs/
 results/scratch.csv
+artifacts/
