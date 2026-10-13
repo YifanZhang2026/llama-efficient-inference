@@ -124,6 +124,8 @@ nsys：`prof/int4_bs1.nsys-rep`（bs=1，1 次 prefill + 31 步 decode，warmup 
 - 量化的 Linear 共 16 × 7 + 1（lm_head）= **113** 个；多个 kernel 的次数 / forward 正好是 113 的倍数 → 每个 Linear 每次 forward 都完整 dequant 一遍。
 - 单个 kernel 最长 ~1.57 ms：形状最大的 lm_head（128256 × 2048）。
 - GPU 忙碌 ≈ 1.27 s / 32 ≈ **39.6 ms / forward**，与 decode 实测 40.5 ms/step 几乎相等。
+- `cudaLaunchKernel`：INT4 61,378 次（~1,920 / forward）vs FP16 21,602 次（~680 / forward）。
+- 计时结束时的 `cudaDeviceSynchronize`（CPU 发完所有 kernel 后等 GPU）：**INT4 7.6 ms vs FP16 0.31 ms** → INT4 是 CPU 跑在前面等 GPU（GPU-bound），FP16 是 GPU 一直追着 CPU（launch-bound）。
 
 结论：INT4 时间 ~91% 花在 dequant 的逐元素 kernel 上，矩阵乘本身只占 ~6%。且 **INT4 decode 是 GPU-bound**（GPU 几乎不空闲），与 FP16 的 launch-bound 相反：dequant 把每步 GPU 工作从 ~6 ms 撑到 ~40 ms，远超 CPU 发 kernel 的 ~15 ms。
 
