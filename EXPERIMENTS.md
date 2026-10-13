@@ -188,6 +188,26 @@
 
 loss 曲线图：
 
+#### E8b 训练扫描（`scripts/run_sweep.sh`，2026-10-13 夜）
+
+都是 200 条训练样本、SGD momentum 0.9、seed 42；评估同一 held-out（5711 tokens）。
+
+| run | 可训练参数 | 每 epoch loss | PPL | acc |
+|---|---:|---|---:|---:|
+| slice（默认 2 ep） | 131,072 | 10.4605 → 8.2425 | 3430.71 | 4.08% |
+| slice_ep6 | 131,072 | 10.46 → 8.24 → 7.88 → 7.65 → 7.56 → 7.49 | 2174.31 | 4.80% |
+| slice_unfreeze（2 ep，expert 权重也训，FP16） | 805,437,440 | 9.2276 → **9.3531** | 6713.77 | 2.85% |
+| lora（默认 2 ep，lr_expert 1e-4） | 2,228,224 | 2.3773 → 2.3723 | 9.59 | 51.53% |
+| lora_lr1e-3（2 ep） | 2,228,224 | 2.3542 → 2.2942 | **10.56** | 51.53% |
+| lora_ep6 | 2,228,224 | 2.3773 → 2.3723 → 2.3669 → 2.3607 → 2.3532 → 2.3439 | 9.36 | 52.20% |
+
+观察（数字层面）：
+- slice 训练 3× 久：loss 继续降但越降越慢（7.49，dense 量级 ~2.4），PPL 3431 → 2174，仍是 dense 的 225×。
+- slice 放开 expert 权重（805 M 参数、FP16、SGD）：epoch 2 loss **上升**，PPL 比只训 router 还差；没出现 NaN。
+- LoRA lr ×10：训练 loss 降得更多，**held-out PPL 反而从 9.66 升到 10.56**，acc 不变。
+- LoRA 训练 3× 久：loss 单调慢降，PPL 9.36、acc 52.20%（比 dense +0.83 个百分点）。
+- slice_ep6 前两个 epoch 与默认 slice run 逐位一致（同机同 seed 可复现）；与旧报告 A40 的 slice 数字不一致。
+
 ### E9 LoRA 有没有在学
 
 | step | router grad norm | `lora_B` weight norm | loss |
