@@ -112,27 +112,46 @@
 
 | | Dense | MoE-slice | MoE-LoRA |
 |---|---:|---:|---:|
-| Total params | | | |
-| Trainable params | | | |
-| Peak mem (MB) | | | |
-| 推理时间 (s)，bs=1, in=256, out=32 | | | |
+| Total params | 1,498,482,688 | 1,498,613,760 | 1,500,710,912 |
+| Trainable params | 0 | 131,072 | 2,228,224 |
+| Peak mem (MB) | 3074 | 3075 | 3082 |
+| 推理时间 (s)，bs=1, in=256, out=32（E0） | 0.56 | 2.71 | 2.83 |
+| 生成速度 (tok/s)，eval_moe，10 条短 prompt，out=32 | 53.5–55.1 | 23.7–31.8 | 28.7–28.9 |
+
+观察：benchmark（prompt 256）里 MoE 比 Dense 慢 ~5×，eval_moe（短 prompt）里只慢 ~2×。
 
 ### E7 训练前的 PPL（刚转换完）
+
+`eval_moe.py` 的 [2/3] 步就是转换后、训练前的评估。held-out = Alpaca[200:300]，共 **5711 tokens**。
 
 | | Dense | MoE-slice（未训练） | MoE-LoRA（未训练） |
 |---|---:|---:|---:|
 | 预测 PPL | | | |
-| 实测 PPL | | | |
+| 实测 PPL | 9.66 | **326,843.71** | 9.66 |
+| 实测 next-token acc | 51.37% | **0.00%** | 51.37% |
+
+观察：
+- LoRA 未训练 = Dense，逐位一致 → zero-init identity 成立。
+- slice 刚转换完 PPL 就是 32 万，**比均匀随机猜（PPL = vocab = 128,256）还差**，acc 0% → 模型在转换那一刻就坏了，不是"训练预算不够"。
 
 推导 / 解释：
 
 ### E8 训练与训练后评估
 
+`logs/train_*.log`、`logs/eval_*.log`。默认配置：200 条训练样本，2 epochs，SGD momentum 0.9，lr_router 1e-3 / lr_expert 1e-4，`torch.manual_seed(42)`。每 epoch ~225–235 s。
+
 | | Epoch 1 loss | Epoch 2 loss | PPL | Next-token acc |
 |---|---:|---:|---:|---:|
-| Dense | – | – | | |
-| Slice | | | | |
-| LoRA | | | | |
+| Dense | – | – | 9.66 | 51.37% |
+| Slice | 10.4605 | 8.2425 | 3430.71 | 4.08% |
+| LoRA | 2.3773 | 2.3723 | 9.59 | 51.53% |
+
+与旧报告（A40）对比：
+- Dense acc 51.37% vs 51.30%：不同 GPU 上 FP16 数值差异。
+- LoRA loss / PPL / acc **与旧报告完全一致**（2.3773 / 2.3723 / 9.59 / 51.53%）。
+- Slice loss 不一致（旧 10.8595 / 8.3795，PPL 3414.03 / acc 4.57%）。
+- slice 训练把 PPL 从 32 万降到 3431（降了ㄧ百倍），但仍离 dense 9.66 很远。
+- LoRA acc +0.16 个百分点，在 5711 个 token 上 ≈ 多猜对 9 个 token —— 是否超过噪声见 E9。
 
 loss 曲线图：
 
@@ -153,9 +172,20 @@ loss 曲线图：
 
 ### E11 Expert 负载分布
 
+`eval_moe.py`，训练后，10 条 MT-bench 风格 prompt，前 4 层：
+
+| Layer | slice E0 | E1 | E2 | E3 | | LoRA E0 | E1 | E2 | E3 |
+|---|---:|---:|---:|---:|---|---:|---:|---:|---:|
+| 0 | 14% | 15% | 22% | 49% | | 25% | 21% | 34% | 21% |
+| 1 | 50% | 34% | 7% | 9% | | 30% | 11% | 21% | 38% |
+| 2 | 24% | 50% | 13% | 14% | | 17% | 33% | 20% | 30% |
+| 3 | 22% | 50% | 14% | 14% | | 31% | 28% | 31% | 10% |
+
 图：
 
 观察：
+- top-2 of 4 下每个 token 选两个**不同**的 expert，所以单个 expert 占比上限是 50%。slice 的 Layer 1–3 都有 expert 到了 50% —— 即**每个 token 都选了它**。
+- LoRA 分布更分散，但也不均匀（10%–38%）。
 
 ---
 
