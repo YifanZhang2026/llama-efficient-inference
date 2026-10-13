@@ -99,13 +99,16 @@ def parse_args():
     parser.add_argument("--init-mode", choices=["slice", "lora"], default="slice")
     parser.add_argument("--lora-rank", type=int, default=8)
     parser.add_argument("--lora-alpha", type=float, default=16.0)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--ckpt", default="checkpoints/moe_finetuned.pt",
+                        help="MoE weights written by train_moe.py --ckpt")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     device = args.device
-    torch.manual_seed(42)
+    torch.manual_seed(args.seed)
 
     # Held-out split: train_moe.py uses the first 200 Alpaca
     # samples for training; we evaluate on samples 200-299 here.
@@ -179,7 +182,7 @@ def main():
         lora_alpha=args.lora_alpha,
     )
 
-    ckpt_path = "checkpoints/moe_finetuned.pt"
+    ckpt_path = args.ckpt
     if os.path.exists(ckpt_path):
         ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=True)
         if (

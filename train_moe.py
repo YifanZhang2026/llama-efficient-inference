@@ -189,13 +189,16 @@ def parse_args():
     parser.add_argument("--lr-router", type=float, default=1e-3)
     parser.add_argument("--lr-expert", type=float, default=1e-4)
     parser.add_argument("--unfreeze-experts", action="store_true")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--ckpt", default="checkpoints/moe_finetuned.pt",
+                        help="where to save the MoE weights (eval_moe.py --ckpt reads it)")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     device = args.device
-    torch.manual_seed(42)
+    torch.manual_seed(args.seed)
 
     # Data split:
     # the first 200 Alpaca samples are used for training; eval_moe.py uses
@@ -214,7 +217,7 @@ def main():
     print("=" * 70)
     print(
         f"Config: N={args.num_experts}, K={args.top_k}, init_mode={args.init_mode}, "
-        f"train_samples={args.train_samples}, epochs={args.epochs}"
+        f"train_samples={args.train_samples}, epochs={args.epochs}, seed={args.seed}"
     )
 
     print("\n[1/4] Loading dense baseline model...")
@@ -286,7 +289,7 @@ def main():
 
     # Save only the MoE-related parameters. The dense base model is reloaded
     # from the original checkpoint during evaluation.
-    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs(os.path.dirname(args.ckpt) or ".", exist_ok=True)
     moe_state = {}
     for k, v in model.state_dict().items():
         if "feed_forward" in k:
@@ -299,7 +302,7 @@ def main():
             "top_k": args.top_k,
             "init_mode": args.init_mode,
         },
-        "checkpoints/moe_finetuned.pt",
+        args.ckpt,
     )
     print(f"Training losses: {losses}")
 
@@ -325,7 +328,7 @@ def main():
     # strict=False is intentional: this checkpoint only contains the MoE /
     # feed_forward subset, not a full dense-model state_dict.
     ckpt = torch.load(
-        "checkpoints/moe_finetuned.pt", map_location="cpu", weights_only=True
+        args.ckpt, map_location="cpu", weights_only=True
     )
     model.load_state_dict(ckpt["moe_state"], strict=False)
     model.to(device)
