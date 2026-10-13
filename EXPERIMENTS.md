@@ -24,6 +24,31 @@
 
 ---
 
+## E0 原始 benchmark 复现（`run_benchmark.py`，未修改）
+
+`logs/benchmark_orig.log`，2026-10-13。计时为 `generate()` 端到端（prefill + 32 步 decode + 采样），无 warmup，单次运行。
+
+| input_len=256, output_len=32 | bs=1 | bs=8 | bs=16 |
+|---|---:|---:|---:|
+| FP16 runtime (s) | 1.10 | 0.68 | 0.72 |
+| FP16 peak mem (MB) | 3072 | 4495 | 6134 |
+| INT4 runtime (s) | 1.55 | 1.67 | 1.78 |
+| INT4 peak mem (MB) | 4540 | 5508 | 6621 |
+
+| bs=1, in=256, out=32 | Dense | MoE-slice | MoE-LoRA |
+|---|---:|---:|---:|
+| runtime (s) | 0.56 | 2.71 | 2.83 |
+| peak mem (MB) | 3074 | 3075 | 3082 |
+
+观察：
+- **FP16 bs=1 (1.10 s) 比 bs=8 (0.68 s) 还慢**；同一配置在 Phase 3 的 Dense 行只要 0.56 s。差别只在于 FP16 bs=1 是整个进程的第一次 `generate()` → 首轮额外 ~0.54 s 是 warmup 开销（见 P1）。
+- 峰值显存与旧报告 P100 上的数字**逐 MB 一致**：显存只由张量形状决定，与硬件无关。
+- 去掉 warmup 后 FP16 bs=1/8/16 ≈ 0.56/0.68/0.72 s，bs 增大 16× 时间只多 ~30%。
+- bs=1 FP16 约 0.56 s / 32 ≈ 17 ms/step（含 prefill 摊入），而权重 ~2.5 GB / 1555 GB/s ≈ 1.6 ms → 离带宽下限差一个数量级，原因待 profiler 验证（E4/E5）。
+- INT4 比 FP16 慢 2.5–2.8×；MoE 比 Dense 慢 ~5×。
+
+---
+
 ## Part 1：INT4 量化
 
 ### E1 模型大小
@@ -138,10 +163,23 @@ loss 曲线图：
 
 > 每个问题一条。面试讲"遇到了什么问题"就照这个讲。
 
-### P1 标题
+### P1 FP16 bs=1 比 bs=8 还慢
 
-- **现象**（带数字）：
+- **现象**：原始 benchmark 中 FP16 bs=1 = 1.10 s，bs=8 = 0.68 s；同配置的 Dense 行（后跑）= 0.56 s。
 - **最初假设**：
 - **验证实验**：
-- **结论**（带数字）：
-- **假设错在哪 / 学到什么**：
+- **结论**：
+- **学到什么**：
+
+### P2 数据下载失败（环境）
+
+- **现象**：`load_dataset("tatsu-lab/alpaca")` 报 `TypeError: process() takes no keyword arguments`。
+- **定位**：traceback 最底层是 httpx2 解压响应；镜像自带 Brotli 1.0.9 不支持新参数。
+- **解决**：`pip install -U brotli`（→ 1.2.0）。
+- **学到什么**：看 traceback 最底层的库，而不是最上层的调用。
+
+### P3 RoPE 缩放缺失
+
+- **现象**：`ckpt/params.json` 中 `use_scaled_rope: true`，`llama/model.py` 未实现 Llama 3.1+ 的 `apply_scaling`。
+- **影响**：短序列（≤320）下低频分量转角很小，输出仍通顺；但 dense baseline 与官方模型不完全一致。
+- **待办**（改进阶段）：实现后对比 PPL 变化。
