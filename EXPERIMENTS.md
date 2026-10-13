@@ -120,6 +120,21 @@
 | FP16 bs=1 | | | | |
 | INT4 bs=1 | | | | |
 
+**nsys：FP16 bs=1**（`prof/fp16_bs1.nsys-rep`，1 次 prefill + 31 步 decode，warmup 之后）
+
+| 指标 | 值 | 来源 |
+|---|---:|---|
+| kernel launch / forward | ~680 | (21602 `cudaLaunchKernel` + 272 `cuLaunchKernel` + 32 `ExC`) / 32 |
+| GPU kernel 总时间 | ~199 ms | GEMM 37.2 ms 占 18.7% |
+| GPU 忙碌 / decode 步 | ~6 ms | (199 − prefill ~15) / 31 |
+| NVTX decode 区间（CPU） | ~23 ms | nsys 下；不开 nsys 时 15 ms（每 launch 追踪开销 ~12 µs） |
+| copy / cast 小 kernel | 5200+ 次，~27 ms（13.6%） | `direct_copy`、`float16_copy` |
+| decode lm_head GEMM | 406 µs × 31 | 525 MB 权重 → 理论 338 µs → ~83% 带宽 |
+
+结论：bs=1 decode 每步 15 ms 中 GPU 只忙 ~6 ms，其余在等 CPU 发 kernel（~680 个 × ~20 µs）→ **launch-bound**，解释了 decode 不随 bs 变、bs=1 prefill ≈ 1 步 decode。GPU 侧 6 ms 仍高于 1.6 ms 带宽下限，主要来自大量小 elementwise / copy kernel；单个大 kernel（lm_head）已达 ~83% 带宽。
+
+待验证（改进阶段）：CUDA Graphs / `torch.compile(mode="reduce-overhead")` 应把 decode 从 ~15 ms 降到 ~6 ms。
+
 ---
 
 ## Part 2：MoE
