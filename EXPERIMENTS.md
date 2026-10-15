@@ -264,7 +264,9 @@ ncu --profile-from-start off --metrics dram__bytes_op_read.sum,dram__bytes_op_wr
 
 ---
 
-## Part 2：MoE
+## Part 2：MoE 推理性能
+
+> 范围（2026-10-16 决定）：MoE 只作为**推理性能**案例保留（为什么慢：逐 token 循环 + `.item()` 同步）。slice / LoRA 的训练与效果分析（E7–E9a、E11）移到文末**附录 A**，不作为主线。
 
 ### E6 参数、显存与速度（N=4, K=2, LoRA r=8）
 
@@ -279,6 +281,73 @@ ncu --profile-from-start off --metrics dram__bytes_op_read.sum,dram__bytes_op_wr
 | 生成速度 (tok/s)，eval_moe，10 条短 prompt，out=32 | 53.5–55.1 | 23.7–31.8 | 28.7–28.9 |
 
 观察：benchmark（prompt 256）里 MoE 比 Dense 慢 ~5×，eval_moe（短 prompt）里只慢 ~2×。`bench.py` 拆开后：**prefill 慢 ~96×（17.7 ms → 1696 ms），decode 只慢 1.6–1.8×**。
+
+### E10 MoE 慢在哪
+
+- 预测同步次数（prefill 256 tokens）：
+- nsys 实测（`prof/moelora_bs1.nsys-rep`，MoE-LoRA bs=1，1 次 prefill + 31 步 decode）：
+
+| CUDA API | 次数 | 总时间 | 对照 FP16 |
+|---|---:|---:|---:|
+| `cudaLaunchKernel` | 109,890 | 761 ms | 21,602 |
+| `cudaMemcpyAsync` | 19,392 | 198 ms | 1,024 |
+| `cudaStreamSynchronize` | **9,184** | 105 ms | 0 |
+
+- 9,184 = 256 × 2 × 16（prefill：token × top-K × 层）+ 31 × 1 × 2 × 16（decode）= 8,192 + 992，**精确吻合**。
+- 19,392 = 2 × 9,184 + 1,024（1,024 与 FP16 相同，是 KV cache 写入）。
+- 结论：
+
+---
+
+## 问题记录
+
+> 每个问题一条。面试讲"遇到了什么问题"就照这个讲。
+
+### P1 FP16 bs=1 比 bs=8 还慢
+
+- **现象**：原始 benchmark 中 FP16 bs=1 = 1.10 s，bs=8 = 0.68 s；同配置的 Dense 行（后跑）= 0.56 s。
+- **最初假设**：
+- **验证实验**：`prof/fp16_bs1_full.nsys-rep`（`scripts/run_sweep.sh`，`nsys` 不带 capture range，抓整个进程；`bench.py --mode fp16 --bs 1 --iters 2` = warmup 3 + 计时 2，共 5 轮）。用 `nsys stats` 导出的 sqlite，按每轮 33 个 `cudaEventRecord` 切分各轮，逐轮比较（`logs/nsys_stats_fp16_full.txt` 是汇总表）。nsys 下各轮都变慢（每次 launch 的追踪开销），但首轮多出的量与不开 nsys 时一致：
+
+| | rep 0（cold） | rep 1 | rep 4 |
+|---|---:|---:|---:|
+| 整轮 CPU 时间 (ms) | 1312.8 | 800.0 | 751.3 |
+| prefill (ms) | **429.0** | 26.7 | 26.7 |
+| decode 第 1 步 (ms) | **141.9** | 24.4 | 24.2 |
+| decode 第 2 步 (ms) | 26.5 | 24.7 | 24.3 |
+| kernel 数 / GPU kernel 总时间 | 21,906 / 203.5 ms | 21,906 / 203.5 ms | 21,906 / 203.4 ms |
+| CUDA API 时间（主线程） | 443.3 ms | 179.6 ms | |
+| API 之外的 CPU 时间 | 869.5 ms | 620.4 ms | |
+
+rep 0 − rep 1 = +513 ms（不开 nsys 时 `bench.py` 的 cold − e2e ≈ 983 − 483 = 500 ms），**全部在 prefill（+402 ms）和 decode 第 1 步（+117 ms）**；从第 2 步起与稳态相同。GPU 侧工作完全一样（kernel 数、kernel 名称、GPU 时间都相同）。
+
+多出的 513 ms 的组成：
+- `cudaLaunchKernel` **+199 ms**，调用次数相同：几乎都来自 10 次"该 kernel 的第一次 launch"（比 rep 1 同位置慢 >0.2 ms 的只有这 10 次，合计 +195 ms）。prefill 里：`vectorized_elementwise_kernel` ×3（26.4 / 17.0 / 8.1 ms）、`softmax_warp_forward` 24.4 ms、`splitKreduce_kernel` 16.8 ms、`reduce_kernel` ×2（12.9 / 8.3 ms）、`triu_tril_kernel` 5.2 ms；decode 第 1 步：`indexSelectSmallIndex`（embedding 查表，单 token 时才用的 kernel）**75.6 ms**。
+- `cuLibraryLoadData` ×14，**+48.7 ms**，全在 prefill，集中在首轮 +210 → +318 ms（第一个 GEMM 前后）。rep 1 起不再出现。
+- `cuKernelGetFunction` +8.6 ms；`cudaMalloc` ×12 + `cudaFree` ×1，+6.5 ms（caching allocator 首次扩容）；`cuGetProcAddress` ×838、`cuInit` ×4、`cudaGetDriverEntryPoint` ×2 只在首轮出现，耗时可忽略。
+- **API 之外的 CPU 时间 +249 ms**（prefill +219，decode 第 1 步 +42）。最大的一段空隙 **115.6 ms** 在首轮 +95 ms 处：最后一次 `cuInit` 之后、第一次 `cuLibraryLoadData` 之前，期间没有任何 CUDA API 调用；另一段 16.7 ms 在 `cudaGetDriverEntryPoint` 与 `cuInit` 之间。采集时 `--sample=none`，没有 CPU 调用栈，无法直接看到这段时间里 CPU 在执行什么。
+- 首轮之前的 setup（建模型、`load_state_dict`）另有 1.7 s，其中 `cudaMemcpyAsync` ×147 共 630 ms（权重 H2D），不计入 cold_e2e。
+- **结论**：
+- **学到什么**：
+
+### P2 数据下载失败（环境）
+
+- **现象**：`load_dataset("tatsu-lab/alpaca")` 报 `TypeError: process() takes no keyword arguments`。
+- **定位**：traceback 最底层是 httpx2 解压响应；镜像自带 Brotli 1.0.9 不支持新参数。
+- **解决**：`pip install -U brotli`（→ 1.2.0）。
+- **学到什么**：看 traceback 最底层的库，而不是最上层的调用。
+
+### P3 RoPE 缩放缺失
+
+- **现象**：`ckpt/params.json` 中 `use_scaled_rope: true`，`llama/model.py` 未实现 Llama 3.1+ 的 `apply_scaling`。
+- **影响**：短序列（≤320）下低频分量转角很小，输出仍通顺；但 dense baseline 与官方模型不完全一致。
+- **待办**（改进阶段）：实现后对比 PPL 变化。
+
+---
+
+## 附录 A：MoE 训练与效果（课程部分，不作为主线）
+
+以下小节保留原编号，数据与结论不变，只是移出主线。
 
 ### E7 训练前的 PPL（刚转换完）
 
@@ -454,21 +523,6 @@ Dense = 9.66 / 51.37%（每个 eval log 的 [1/3] 都重新测得同样的值）
 - `eval_moe.py` 只打印 2 位小数的 PPL，所以 PPL 的 seed 方差分辨率有限。
 - 这里只量了**训练 seed** 的方差；评估集固定为同一组 5711 个 token，评估集抽样带来的不确定性（换一批 held-out 样本会怎样）没有量。
 
-### E10 MoE 慢在哪
-
-- 预测同步次数（prefill 256 tokens）：
-- nsys 实测（`prof/moelora_bs1.nsys-rep`，MoE-LoRA bs=1，1 次 prefill + 31 步 decode）：
-
-| CUDA API | 次数 | 总时间 | 对照 FP16 |
-|---|---:|---:|---:|
-| `cudaLaunchKernel` | 109,890 | 761 ms | 21,602 |
-| `cudaMemcpyAsync` | 19,392 | 198 ms | 1,024 |
-| `cudaStreamSynchronize` | **9,184** | 105 ms | 0 |
-
-- 9,184 = 256 × 2 × 16（prefill：token × top-K × 层）+ 31 × 1 × 2 × 16（decode）= 8,192 + 992，**精确吻合**。
-- 19,392 = 2 × 9,184 + 1,024（1,024 与 FP16 相同，是 KV cache 写入）。
-- 结论：
-
 ### E11 Expert 负载分布
 
 `eval_moe.py`，训练后，10 条 MT-bench 风格 prompt，前 4 层：
@@ -485,49 +539,3 @@ Dense = 9.66 / 51.37%（每个 eval log 的 [1/3] 都重新测得同样的值）
 观察：
 - top-2 of 4 下每个 token 选两个**不同**的 expert，所以单个 expert 占比上限是 50%。slice 的 Layer 1–3 都有 expert 到了 50% —— 即**每个 token 都选了它**。
 - LoRA 分布更分散，但也不均匀（10%–38%）。
-
----
-
-## 问题记录
-
-> 每个问题一条。面试讲"遇到了什么问题"就照这个讲。
-
-### P1 FP16 bs=1 比 bs=8 还慢
-
-- **现象**：原始 benchmark 中 FP16 bs=1 = 1.10 s，bs=8 = 0.68 s；同配置的 Dense 行（后跑）= 0.56 s。
-- **最初假设**：
-- **验证实验**：`prof/fp16_bs1_full.nsys-rep`（`scripts/run_sweep.sh`，`nsys` 不带 capture range，抓整个进程；`bench.py --mode fp16 --bs 1 --iters 2` = warmup 3 + 计时 2，共 5 轮）。用 `nsys stats` 导出的 sqlite，按每轮 33 个 `cudaEventRecord` 切分各轮，逐轮比较（`logs/nsys_stats_fp16_full.txt` 是汇总表）。nsys 下各轮都变慢（每次 launch 的追踪开销），但首轮多出的量与不开 nsys 时一致：
-
-| | rep 0（cold） | rep 1 | rep 4 |
-|---|---:|---:|---:|
-| 整轮 CPU 时间 (ms) | 1312.8 | 800.0 | 751.3 |
-| prefill (ms) | **429.0** | 26.7 | 26.7 |
-| decode 第 1 步 (ms) | **141.9** | 24.4 | 24.2 |
-| decode 第 2 步 (ms) | 26.5 | 24.7 | 24.3 |
-| kernel 数 / GPU kernel 总时间 | 21,906 / 203.5 ms | 21,906 / 203.5 ms | 21,906 / 203.4 ms |
-| CUDA API 时间（主线程） | 443.3 ms | 179.6 ms | |
-| API 之外的 CPU 时间 | 869.5 ms | 620.4 ms | |
-
-rep 0 − rep 1 = +513 ms（不开 nsys 时 `bench.py` 的 cold − e2e ≈ 983 − 483 = 500 ms），**全部在 prefill（+402 ms）和 decode 第 1 步（+117 ms）**；从第 2 步起与稳态相同。GPU 侧工作完全一样（kernel 数、kernel 名称、GPU 时间都相同）。
-
-多出的 513 ms 的组成：
-- `cudaLaunchKernel` **+199 ms**，调用次数相同：几乎都来自 10 次"该 kernel 的第一次 launch"（比 rep 1 同位置慢 >0.2 ms 的只有这 10 次，合计 +195 ms）。prefill 里：`vectorized_elementwise_kernel` ×3（26.4 / 17.0 / 8.1 ms）、`softmax_warp_forward` 24.4 ms、`splitKreduce_kernel` 16.8 ms、`reduce_kernel` ×2（12.9 / 8.3 ms）、`triu_tril_kernel` 5.2 ms；decode 第 1 步：`indexSelectSmallIndex`（embedding 查表，单 token 时才用的 kernel）**75.6 ms**。
-- `cuLibraryLoadData` ×14，**+48.7 ms**，全在 prefill，集中在首轮 +210 → +318 ms（第一个 GEMM 前后）。rep 1 起不再出现。
-- `cuKernelGetFunction` +8.6 ms；`cudaMalloc` ×12 + `cudaFree` ×1，+6.5 ms（caching allocator 首次扩容）；`cuGetProcAddress` ×838、`cuInit` ×4、`cudaGetDriverEntryPoint` ×2 只在首轮出现，耗时可忽略。
-- **API 之外的 CPU 时间 +249 ms**（prefill +219，decode 第 1 步 +42）。最大的一段空隙 **115.6 ms** 在首轮 +95 ms 处：最后一次 `cuInit` 之后、第一次 `cuLibraryLoadData` 之前，期间没有任何 CUDA API 调用；另一段 16.7 ms 在 `cudaGetDriverEntryPoint` 与 `cuInit` 之间。采集时 `--sample=none`，没有 CPU 调用栈，无法直接看到这段时间里 CPU 在执行什么。
-- 首轮之前的 setup（建模型、`load_state_dict`）另有 1.7 s，其中 `cudaMemcpyAsync` ×147 共 630 ms（权重 H2D），不计入 cold_e2e。
-- **结论**：
-- **学到什么**：
-
-### P2 数据下载失败（环境）
-
-- **现象**：`load_dataset("tatsu-lab/alpaca")` 报 `TypeError: process() takes no keyword arguments`。
-- **定位**：traceback 最底层是 httpx2 解压响应；镜像自带 Brotli 1.0.9 不支持新参数。
-- **解决**：`pip install -U brotli`（→ 1.2.0）。
-- **学到什么**：看 traceback 最底层的库，而不是最上层的调用。
-
-### P3 RoPE 缩放缺失
-
-- **现象**：`ckpt/params.json` 中 `use_scaled_rope: true`，`llama/model.py` 未实现 Llama 3.1+ 的 `apply_scaling`。
-- **影响**：短序列（≤320）下低频分量转角很小，输出仍通顺；但 dense baseline 与官方模型不完全一致。
-- **待办**（改进阶段）：实现后对比 PPL 变化。
