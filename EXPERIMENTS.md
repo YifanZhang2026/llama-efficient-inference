@@ -168,6 +168,78 @@ nsys：`prof/int4_bs1.nsys-rep`（bs=1，1 次 prefill + 31 步 decode，warmup 
 
 结论：INT4 时间 ~91% 花在 dequant 的逐元素 kernel 上，矩阵乘本身只占 ~6%。且 **INT4 decode 是 GPU-bound**（GPU 几乎不空闲），与 FP16 的 launch-bound 相反：dequant 把每步 GPU 工作从 ~6 ms 撑到 ~40 ms，远超 CPU 发 kernel 的 ~15 ms。
 
+### E4b dequant 的 HBM 搬运量
+
+`dequant_traffic.py`，2026-10-15。推算（每个权重）：`& 0x0F` 1 + `>> 4` 1 + `& 0x0F` 1 + 两次跨步写 1 + 1 + `.float()` 5 + `- zp` 8 + `* scale` 8 + `.half()` 6 = 32 B，再加 `F.linear` 读 fp16 权重 2 B = 34 B；FP16 模型只读 2 B。
+
+- **A**：`dequantize_packed` 拆成单个 kernel 逐个计时（CUDA event，warmup 5，取 50 次中位数），用推算字节数算有效带宽。
+- **B**：1 GiB uint8 `copy_()` 的带宽（读 + 写）作为本卡可达带宽，预测整段 dequant 时间 = 32 B × N / 该带宽。
+- **C**：Nsight Compute 读每个 kernel 的 DRAM / L2 字节数。**A100 容器报 `ERR_NVGPUCTRPERM`（无性能计数器权限），C 改在本地 RTX 5070 Laptop 上做**。
+
+#### A + B：A100（`logs/dequant_traffic_1015.log`，真实权重）
+
+1 GiB copy：`clone()` 1373 GB/s，`copy_()` 1378 GB/s（标称 1555 GB/s 的 89%）。下表"占 copy"以 1378 GB/s 为 100%。
+
+| 步骤 | lm_head [128256, 2048] ms | 推算 B / 权重 | 有效带宽 GB/s | 占 copy | wq [2048, 2048] ms | 占 copy |
+|---|---:|---:|---:|---:|---:|---:|
+| `& 0x0F`（even） | 0.207 | 1 | 1270 | 92% | 0.027 | 11% |
+| `>> 4` | 0.209 | 1 | 1257 | 91% | 0.027 | 11% |
+| `& 0x0F`（odd） | 0.207 | 1 | 1270 | 92% | 0.026 | 12% |
+| `w_int4[:, 0::2] =` | **0.508** | 1 | 517 | **37.5%** | 0.027 | 11% |
+| `w_int4[:, 1::2] =` | **0.508** | 1 | 517 | **37.5%** | 0.026 | 12% |
+| `.float()` | 1.282 | 5 | 1024 | 74% | 0.028 | 55% |
+| `zp` / `scale` `.float()` | 0.035 | ≈0 | – | – | 0.033 | – |
+| `- zp` | 1.572 | 8 | 1337 | 97% | 0.038 | 64% |
+| `* scale` | 1.572 | 8 | 1337 | 97% | 0.038 | 64% |
+| `.half()` | 1.193 | 6 | 1321 | 96% | 0.029 | 64% |
+| **整段 `dequantize_packed`** | **7.195** | 32 | 1168 | 85% | 0.206 | 47% |
+| `F.linear` fp16，1 token | 0.398 | 2 | 1319 | 96% | 0.039 | 16% |
+
+- lm_head：各步之和 7.292 ms；按 32 B × N / copy 带宽预测 **6.100 ms**，实测 7.195 ms。
+- `.float() : - zp : * scale : .half()` 耗时比 = 1.282 : 1.572 : 1.572 : 1.193 ≈ 6.5 : 8 : 8 : 6（推算 5 : 8 : 8 : 6）。
+- wq（N = 4.2 M）：每步 26–38 µs，与推算字节数基本无关；整段 0.206 ms vs 预测 0.097 ms。
+- lm_head 整段 dequant（7.2 ms）是同一权重 fp16 `F.linear`（0.40 ms）的 18 倍。
+
+#### C：本地 RTX 5070 Laptop（`results/ncu_dequant_local_1015.csv`）
+
+GPU：GeForce RTX 5070 Laptop（Blackwell，CC 12.0，GDDR7，无 ECC，L2 32 MiB），torch 2.11.0+cu128，ncu 2025（CUDA 13.3）。形状 [65536, 2048]（N = 134 M，随机 fp16 权重；8 GB 显存放不下 lm_head 的中间张量）。
+
+```
+ncu --profile-from-start off --metrics dram__bytes_op_read.sum,dram__bytes_op_write.sum,lts__t_bytes.sum,gpu__time_duration.sum \
+    --csv --log-file results/ncu_dequant_local_1015.csv python dequant_traffic.py --ncu --shape big=65536x2048
+```
+
+本卡 A + B（`results/logs/dequant_traffic_local_1015.log`）：copy 332 GB/s；跨步写 1.05–1.12 ms = copy 的 36–38%；整段 dequant 14.36 ms vs 预测 12.93 ms —— 与 A100 上的比例相同。
+
+| 步骤 | 推算 B / 权重 | DRAM 读 | DRAM 写 | DRAM 合计 | L2 请求（`lts__t_bytes`） | kernel 时间 (µs) |
+|---|---:|---:|---:|---:|---:|---:|
+| `& 0x0F`（even） | 1（0.5 + 0.5） | 0.500 | 0.346 | 0.846 | 1.000 | 349 |
+| `>> 4` | 1（0.5 + 0.5） | 0.575 | 0.355 | 0.930 | 1.075 | 396 |
+| `& 0x0F`（odd） | 1（0.5 + 0.5） | 0.507 | 0.347 | 0.854 | 1.007 | 353 |
+| `w_int4[:, 0::2] =` | 1（0.5 + 0.5） | **1.455** | **0.917** | **2.372** | 2.201 | 1060 |
+| `w_int4[:, 1::2] =` | 1（0.5 + 0.5） | **1.620** | **0.915** | **2.535** | 2.415 | 1142 |
+| `.float()` | 5（1 + 4） | 1.002 | 3.900 | 4.902 | 5.002 | 2336 |
+| `zp` / `scale` `.float()` | ≈0 | 0.033 | 0.000 | 0.033 | 0.097 | 37 |
+| `- zp` | 8（4 + 4） | 4.045 | 3.871 | 7.916 | 8.137 | 3244 |
+| `* scale` | 8（4 + 4） | 4.042 | 3.866 | 7.908 | 8.135 | 3237 |
+| `.half()` | 6（4 + 2） | 4.168 | 1.879 | 6.047 | 6.169 | 2509 |
+| **合计** | **32** | | | **34.34** | **35.24** | |
+
+单位：字节 / 权重（= 计数器读数 / N）。
+
+- 两次跨步写：DRAM 读 1.46 / 1.62 B（推算 0.5），写 0.92 B（推算 0.5），L2 请求 2.2 / 2.4 B（推算 1）。作为参照，`w_int4` 整个数组是 1 B / 权重。
+- 其余 kernel 的 L2 请求字节与推算一致（1.00 / 1.08 / 1.01 / 5.00 / 8.14 / 8.14 / 6.17）。
+- `.float()` 的字节数与推算一致（L2 5.00 B），但耗时占比高于推算（本卡 copy 的 90%，A100 上 74%）。
+- 非跨步的 kernel，DRAM 写都比推算的写字节少 0.10–0.15 B / 权重（≈ 13–21 MB，小于 32 MiB L2）；可能是 kernel 结束时仍留在 L2、尚未写回的脏数据不计入 DRAM 写，所以 DRAM 写是下界。
+
+口径与局限：
+- ncu 默认在每个 kernel 前清空缓存（`--cache-control all`），读都是冷的；实际推理中上一步的输出可能部分在 L2 中。
+- 本卡是 GDDR7、无 ECC、L2 32 MiB；A100 是 HBM2、ECC 开启、L2 40 MB。L2 sector（32 B）粒度两者相同，DRAM 侧对部分写的处理可能不同，A100 上的 DRAM 字节数没有直接测到。
+
+预测：
+
+解释：
+
 ### E5 Roofline：decode 离带宽上限多远
 
 | | 每 token 读取的权重字节 | 理论下限 (ms/token) | 实测 (ms/token) | 带宽利用率 |

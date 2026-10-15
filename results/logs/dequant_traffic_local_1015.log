@@ -1,0 +1,38 @@
+random weights: big=65536x2048, w1=8192x2048
+GPU: NVIDIA GeForce RTX 5070 Laptop GPU | torch 2.11.0+cu128
+  1 GiB uint8 clone()    6.475 ms ->   331.7 GB/s (read + write)
+  1 GiB uint8 copy_()    6.464 ms ->   332.2 GB/s (read + write)
+
+[big] [65536, 2048], N = 134,217,728 weights, group 128
+  step                                 ms  hand-count MB  B/weight     GB/s % of copy
+  and_even  packed & 0x0F           0.393          134.2       1.0    341.2    102.7%
+  shr       packed >> 4             0.393          134.2       1.0    341.4    102.8%
+  and_odd   (..) & 0x0F             0.395          134.2       1.0    340.2    102.4%
+  write_even w_int4[:, 0::2] =      1.052          134.2       1.0    127.6     38.4%
+  write_odd  w_int4[:, 1::2] =      1.052          134.2       1.0    127.6     38.4%
+  float     w_int4.float()          2.111          671.1       5.0    317.9     95.7%
+  zp/scale  .float() (tiny)         0.019            0.0       0.0      nan      nan%
+  sub_zp    w - zp                  3.255         1073.7       8.0    329.8     99.3%
+  mul_scale (..) * scale            3.222         1073.7       8.0    333.3    100.3%
+  half      .half()                 2.310          805.3       6.0    348.7    105.0%
+  dequantize_packed (whole)        14.363         4295.0      32.0    299.0     90.0%
+  F.linear fp16, 1 token            0.784          268.4       2.0    342.2    103.0%
+  sum of steps 14.201 ms | predicted 32 B x N / copy bandwidth = 12.928 ms
+
+[w1] [8192, 2048], N = 16,777,216 weights, group 128
+  step                                 ms  hand-count MB  B/weight     GB/s % of copy
+  and_even  packed & 0x0F           0.017           16.8       1.0    989.2    297.8%
+  shr       packed >> 4             0.017           16.8       1.0    987.4    297.2%
+  and_odd   (..) & 0x0F             0.017           16.8       1.0    981.8    295.5%
+  write_even w_int4[:, 0::2] =      0.047           16.8       1.0    359.5    108.2%
+  write_odd  w_int4[:, 1::2] =      0.047           16.8       1.0    359.6    108.2%
+  float     w_int4.float()          0.275           83.9       5.0    305.5     92.0%
+  zp/scale  .float() (tiny)         0.009            0.0       0.0      nan      nan%
+  sub_zp    w - zp                  0.421          134.2       8.0    318.7     95.9%
+  mul_scale (..) * scale            0.422          134.2       8.0    318.3     95.8%
+  half      .half()                 0.311          100.7       6.0    323.3     97.3%
+  dequantize_packed (whole)         1.722          536.9      32.0    311.8     93.8%
+  F.linear fp16, 1 token            0.104           33.6       2.0    322.1     97.0%
+  sum of steps 1.582 ms | predicted 32 B x N / copy bandwidth = 1.616 ms
+
+appended 24 rows to results/dequant_traffic_local.csv

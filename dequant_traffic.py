@@ -24,10 +24,13 @@ C. with --ncu, run each step exactly once between cudaProfilerStart/Stop so
     ncu --profile-from-start off --metrics dram__bytes_read.sum,dram__bytes_write.sum \\
         --csv python dequant_traffic.py --ncu > logs/ncu_dequant.csv
 
-Shapes: lm_head [128256, 2048] and layer-0 wq [2048, 2048], real weights.
+Shapes: lm_head [128256, 2048] and layer-0 wq [2048, 2048], real weights. Without
+the checkpoint (or with --shape) weights are random fp16: the bytes moved depend
+only on the shape. Runs with nothing but torch installed (no tiktoken needed).
 
 Usage:
     python dequant_traffic.py                 # A + B, appends results/dequant_traffic.csv
+    python dequant_traffic.py --shape big=65536x2048 --shape w1=8192x2048   # random weights
 """
 import argparse
 import csv
@@ -35,12 +38,19 @@ import datetime
 import os
 import statistics
 
+import importlib.util
+
 import torch
 import torch.nn.functional as F
 
-from llama.config import CKPT_DIR
-from llama.quantize import QuantizedLinear
+# load llama/quantize.py by path: importing the llama package pulls in the tokenizer (tiktoken)
+_spec = importlib.util.spec_from_file_location(
+    "llama_quantize", os.path.join(os.path.dirname(os.path.abspath(__file__)), "llama", "quantize.py"))
+_quantize = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_quantize)
+QuantizedLinear = _quantize.QuantizedLinear
 
+CKPT_DIR = os.environ.get("LLAMA_CKPT_DIR", "./ckpt")  # same default as llama/config.py
 SHAPES = {"lm_head": "output.weight", "wq": "layers.0.attention.wq.weight"}
 
 
@@ -114,10 +124,23 @@ def main():
     p.add_argument("--warmup", type=int, default=5)
     p.add_argument("--iters", type=int, default=50)
     p.add_argument("--ncu", action="store_true", help="run every step once inside cudaProfilerStart/Stop")
+    p.add_argument("--shape", action="append", default=[],
+                   help="name=OUTxIN with random weights, repeatable (default: lm_head and wq from the checkpoint)")
     p.add_argument("--csv", default="results/dequant_traffic.csv")
     a = p.parse_args()
 
-    sd = torch.load(os.path.join(CKPT_DIR, "consolidated.00.pth"), map_location="cpu", weights_only=True, mmap=True)
+    ckpt = os.path.join(CKPT_DIR, "consolidated.00.pth")
+    if a.shape or not os.path.exists(ckpt):
+        specs = a.shape or ["lm_head=128256x2048", "wq=2048x2048"]
+        shapes = {}
+        for spec in specs:
+            name, dims = spec.split("=")
+            out_f, in_f = (int(d) for d in dims.lower().split("x"))
+            shapes[name] = lambda o=out_f, i=in_f: (torch.randn(o, i, device="cuda") * 0.02).half()
+        print("random weights:", ", ".join(specs))
+    else:
+        sd = torch.load(ckpt, map_location="cpu", weights_only=True, mmap=True)
+        shapes = {name: lambda k=key: sd[k].cuda() for name, key in SHAPES.items()}
     gpu, rows = torch.cuda.get_device_name(0), []
 
     if not a.ncu:
@@ -127,8 +150,8 @@ def main():
             print(f"  1 GiB uint8 {name:<8} {ms:7.3f} ms -> {gbps:7.1f} GB/s (read + write)")
         ref_bw = bw["copy_()"][1]
 
-    for shape_name, key in SHAPES.items():
-        w = sd[key].cuda()
+    for shape_name, load in shapes.items():
+        w = load()
         packed, scale, zp = QuantizedLinear.quantize_tensor(w, a.group_size)
         n, ops = steps(packed, scale, zp, a.group_size)
         x = torch.randn(1, 1, w.shape[1], dtype=torch.float16, device="cuda")
