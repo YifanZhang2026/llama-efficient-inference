@@ -1,0 +1,33 @@
+== correctness (real weights) 01:01:31
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128
+output.weight                      [128256, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.91e-03 max|cuBLAS-fp32ref| 1.91e-03 | M=16 max|v4-fp32ref| 1.97e-03 max|cuBLAS-fp32ref| 1.95e-03
+layers.0.attention.wq.weight       [2048, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.88e-03 max|cuBLAS-fp32ref| 1.88e-03 | M=16 max|v4-fp32ref| 3.70e-03 max|cuBLAS-fp32ref| 3.70e-03
+layers.0.attention.wk.weight       [512, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 3.57e-03 max|cuBLAS-fp32ref| 3.57e-03 | M=16 max|v4-fp32ref| 3.89e-03 max|cuBLAS-fp32ref| 3.92e-03
+layers.0.feed_forward.w1.weight    [8192, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.94e-03 max|cuBLAS-fp32ref| 1.96e-03 | M=16 max|v4-fp32ref| 1.95e-03 max|cuBLAS-fp32ref| 1.95e-03
+layers.0.feed_forward.w2.weight    [2048, 8192] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.67e-03 max|cuBLAS-fp32ref| 1.67e-03 | M=16 max|v4-fp32ref| 1.95e-03 max|cuBLAS-fp32ref| 3.01e-03
+== T1 bench 01:01:55
+[fp16] bs=1: prefill 17.85 ms | decode 15.147 ms/step (p10 14.915, p90 16.433) | e2e 494.5 ms (cold 1004.0) | peak 3067 MB (static 2869)
+[fp16] bs=8: prefill 41.12 ms | decode 16.477 ms/step (p10 16.204, p90 18.052) | e2e 543.5 ms (cold 565.1) | peak 4454 MB (static 2941)
+[fp16] bs=16: prefill 87.70 ms | decode 15.879 ms/step (p10 12.751, p90 16.125) | e2e 562.8 ms (cold 575.0) | peak 6050 MB (static 3027)
+[int4] bs=1: prefill 46.06 ms | decode 40.275 ms/step (p10 40.262, p90 40.290) | e2e 1294.8 ms (cold 1609.3) | peak 4536 MB (static 1137)
+[int4] bs=8: prefill 78.22 ms | decode 42.451 ms/step (p10 42.367, p90 42.563) | e2e 1395.1 ms (cold 1405.0) | peak 5476 MB (static 1210)
+[int4] bs=16: prefill 123.76 ms | decode 44.606 ms/step (p10 44.424, p90 44.819) | e2e 1509.0 ms (cold 1518.5) | peak 6558 MB (static 1290)
+[int4] bs=1: prefill 37.88 ms | decode 29.780 ms/step (p10 29.261, p90 30.941) | e2e 978.9 ms (cold 1354.9) | peak 2273 MB (static 1137)
+[int4] bs=8: prefill 66.54 ms | decode 31.384 ms/step (p10 30.417, p90 33.204) | e2e 1055.1 ms (cold 1060.6) | peak 3214 MB (static 1210)
+[int4] bs=16: prefill 113.80 ms | decode 32.585 ms/step (p10 32.390, p90 32.787) | e2e 1127.6 ms (cold 1126.0) | peak 4312 MB (static 1290)
+[int4] bs=1: prefill 37.53 ms | decode 32.665 ms/step (p10 32.270, p90 33.350) | e2e 1054.1 ms (cold 6178.7) | peak 1772 MB (static 1137)
+[int4] bs=8: prefill 46.38 ms | decode 34.796 ms/step (p10 34.175, p90 36.073) | e2e 1131.2 ms (cold 1163.4) | peak 2721 MB (static 1210)
+[int4] bs=16: prefill 92.51 ms | decode 33.879 ms/step (p10 33.466, p90 34.382) | e2e 1109.3 ms (cold 1116.8) | peak 4312 MB (static 1290)
+[int4] bs=1: prefill 40.16 ms | decode 26.210 ms/step (p10 25.757, p90 26.906) | e2e 854.1 ms (cold 5286.8) | peak 1711 MB (static 1137)
+[int4] bs=8: prefill 46.82 ms | decode 26.682 ms/step (p10 26.301, p90 27.165) | e2e 868.9 ms (cold 1742.7) | peak 2721 MB (static 1210)
+[int4] bs=16: prefill 92.61 ms | decode 27.013 ms/step (p10 26.347, p90 28.456) | e2e 912.1 ms (cold 943.0) | peak 4312 MB (static 1290)
+== T2 nsys bs=1 01:06:08
+== T3 mem_snapshot bs=1 01:07:37
+[int4] bs=1 in=256: static 1145 MB | peak 4535 MB (replayed 4534) | transient at peak 3390 MB in 9 blocks
+alive at peak, grouped by allocation site (top 15):
+[int4-v2] bs=1 in=256: static 1145 MB | peak 2272 MB (replayed 2272) | transient at peak 1127 MB in 7 blocks
+alive at peak, grouped by allocation site (top 15):
+[int4-v3] bs=1 in=256: static 1145 MB | peak 1771 MB (replayed 1771) | transient at peak 626 MB in 5 blocks
+alive at peak, grouped by allocation site (top 15):
+[int4-v4] bs=1 in=256: static 1145 MB | peak 1710 MB (replayed 1709) | transient at peak 565 MB in 4 blocks
+alive at peak, grouped by allocation site (top 15):

@@ -1,0 +1,7 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | mode=int4 impl=v4 in=256 out=32 warmup=3 iters=10
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[int4] bs=1: prefill 40.16 ms | decode 26.210 ms/step (p10 25.757, p90 26.906) | e2e 854.1 ms (cold 5286.8) | peak 1711 MB (static 1137)
+[int4] bs=8: prefill 46.82 ms | decode 26.682 ms/step (p10 26.301, p90 27.165) | e2e 868.9 ms (cold 1742.7) | peak 2721 MB (static 1210)
+[int4] bs=16: prefill 92.61 ms | decode 27.013 ms/step (p10 26.347, p90 28.456) | e2e 912.1 ms (cold 943.0) | peak 4312 MB (static 1290)
+appended 3 rows to results/bench_part3.csv

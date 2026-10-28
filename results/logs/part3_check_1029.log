@@ -1,0 +1,6 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128
+output.weight                      [128256, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.91e-03 max|cuBLAS-fp32ref| 1.91e-03 | M=16 max|v4-fp32ref| 1.97e-03 max|cuBLAS-fp32ref| 1.95e-03
+layers.0.attention.wq.weight       [2048, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.88e-03 max|cuBLAS-fp32ref| 1.88e-03 | M=16 max|v4-fp32ref| 3.70e-03 max|cuBLAS-fp32ref| 3.70e-03
+layers.0.attention.wk.weight       [512, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 3.57e-03 max|cuBLAS-fp32ref| 3.57e-03 | M=16 max|v4-fp32ref| 3.89e-03 max|cuBLAS-fp32ref| 3.92e-03
+layers.0.feed_forward.w1.weight    [8192, 2048] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.94e-03 max|cuBLAS-fp32ref| 1.96e-03 | M=16 max|v4-fp32ref| 1.95e-03 max|cuBLAS-fp32ref| 1.95e-03
+layers.0.feed_forward.w2.weight    [2048, 8192] v2==v1 True v3==v1 True | M=1 max|v4-fp32ref| 1.67e-03 max|cuBLAS-fp32ref| 1.67e-03 | M=16 max|v4-fp32ref| 1.95e-03 max|cuBLAS-fp32ref| 3.01e-03

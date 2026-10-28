@@ -550,6 +550,8 @@ Yifan 待填：I2 中的三项预测（每个 Linear 的 kernel 数、dequant �
 
 - 正确性（本机 RTX 5070 Laptop，随机权重 × 0.02，g128；2026-10-25）：形状 2048×2048、512×2048、8192×2048、2048×8192、128256×2048 全部测试，v2 和 v3 的输出都与 v1 **`torch.equal` 为 True**，dtype 为 fp16，内存连续。
 
+- A100（真实权重，2026-10-29）：v2 与 v1 逐位相同；bs=1 decode 40.28 → **29.78 ms**（预测 22–25），峰值 4536 → **2273 MB**（多出 1136 MB，预测约 1.1 GB），kernel 1927 → 1362 / 步；nsys 下 GPU 忙碌 27.8 ms、CPU 区间 43.2 ms。详见下方"Part 3 A100 实测汇总"。
+
 ### I2 v3：`torch.compile` 融合 dequant（状态：已实现，`quantize.dequant_fn("v3")`；使用 `--impl v3`）
 
 改动：`_dequant_compiled = torch.compile(QuantizedLinear.dequantize_packed_v2, dynamic=False)`，`forward` 改为调用编译版。**只编译 dequant**，不编译整个模型，避免 FP16 基线一起变化。`dynamic=False`：113 个 Linear 共 6 种形状，每种编译一次。
@@ -571,6 +573,8 @@ Yifan 待填：I2 中的三项预测（每个 Linear 的 kernel 数、dequant �
 无法再优化的部分：Inductor 无法融合 cuBLAS（`F.linear` 属于外部 kernel），fp16 权重仍然要完整写回 HBM 再读一次。
 
 结果：
+
+- A100（2026-10-29）：与 v1 逐位相同；每个 Linear 1 个融合 kernel（113 次 / 步），共 797 个 kernel / 步；bs=1 decode **32.67 ms（比 v2 慢 2.9 ms）**；nsys 下 GPU 忙碌 13.5 ms（其中融合 dequant 7.27 ms），CPU 区间 43.3 ms；cold e2e 6179 ms（含编译）；峰值 1772 MB。详见"Part 3 A100 实测汇总"。
 
 ### I3 v4：Triton 融合 dequant + GEMV（状态：已实现，`llama/int4_gemv.py`；使用 `--impl v4`）
 
@@ -605,6 +609,68 @@ Yifan 待填：I2 中的三项预测（每个 Linear 的 kernel 数、dequant �
 - 待在 A100 上做：见"现阶段待做"中的 T1–T7。注意：PPL 评估是整段输入（M ≥ 128），走不到 v4，要用逐 token decode 才能测出 v4 的数值影响（T5）。
 
 结果（A100）：
+
+- 正确性：与 fp32 参照的误差和 cuBLAS 同量级（1.7e-3 – 3.9e-3），见汇总。
+- bs=1 decode **26.21 ms**（预测约 15），仍是 FP16 的 1.73×；bs=8 / 16 为 26.68 / 27.01 ms。
+- nsys：GPU 忙碌 6.58 ms / 步（FP16 5.56），CPU 区间 36.4 ms；`_int4_gemv_kernel` 共 2.97 ms，各形状有效带宽 140–410 GB/s（copy 1378 GB/s），见汇总的按形状表。
+- 峰值 1711 MB（prefill 走 v3，峰值来自 lm_head 的 fp16 权重 501 MB）。
+
+### Part 3 A100 实测汇总（T1–T3，2026-10-29）
+
+`scripts/run_part3_1029.sh`（c7282a0 的代码）：`logs/part3_check_1029.log`、`logs/bench_part3_*_1029.log`、`results/bench_part3.csv`、nsys `prof/p3_*_bs1_1029.nsys-rep`、显存快照 `prof/mem_int4_*_bs1_1029.pickle`。
+
+**正确性（A100，真实权重，g128）**：lm_head、layer 0 的 wq / wk / w1 / w2 共 5 个形状，v2、v3 的反量化结果与 v1 **`torch.equal` 均为 True**。v4（M = 1 / 16）与 fp32 参照的最大误差为 1.7e-3 – 3.9e-3，与 cuBLAS（v1 权重 + `F.linear`）的误差相同或更小（w2，M=16：v4 1.95e-3，cuBLAS 3.01e-3）。
+
+**T1 端到端**（`bench.py`，warmup 3，iters 10，input 256 / output 32）
+
+| | decode bs=1 / 8 / 16 (ms/步) | prefill bs=1 (ms) | bs=1 static / peak (MB) | bs=1 cold e2e (ms) |
+|---|---|---:|---:|---:|
+| FP16 | 15.15 / 16.48 / 15.88 | 17.85 | 2869 / 3067 | 1004 |
+| INT4 v1 | 40.28 / 42.45 / 44.61 | 46.06 | 1137 / 4536 | 1609 |
+| INT4 v2 | 29.78 / 31.38 / 32.59 | 37.88 | 1137 / 2273 | 1355 |
+| INT4 v3 | 32.67 / 34.80 / 33.88 | 37.53 | 1137 / 1772 | **6179** |
+| INT4 v4 | **26.21** / 26.68 / 27.01 | 40.16 | 1137 / 1711 | **5287** |
+
+- v1 → v4 decode 下降 35%，但**每个版本都比 FP16 慢**（v4 是 FP16 的 1.73×）。
+- v3 的 decode 比 v2 慢约 3 ms，prefill 相同。
+- v3 / v4 的 cold 包含 `torch.compile` 编译和 Triton JIT（多出约 4–5 s）。
+
+**T2 nsys**（bs=1，1 次 prefill + 31 步 decode；表中 decode 为第 3 步起的中位数；nsys 下 CPU 时间整体偏大）
+
+| | decode CPU 区间 | GPU 忙碌 | kernel 数 / 步 | launch API 时间 | 计时结束时的同步等待 | prefill CPU / GPU |
+|---|---:|---:|---:|---:|---:|---|
+| FP16 | 23.43 | 5.56 | 684 | 5.51 | 0.24 | 26.97 / 11.91 |
+| v1 | 53.52 | 39.43 | 1927 | 12.95 | 7.55 | 57.89 / 43.13 |
+| v2 | 43.23 | 27.80 | 1362 | 10.09 | 5.27 | 54.18 / 31.72 |
+| v3 | 43.29 | 13.52 | 797 | 7.17 | 2.40 | 46.97 / 20.69 |
+| v4 | 36.41 | 6.58 | 892 | 6.80 | 0.22 | 47.15 / 20.69 |
+
+（单位 ms；GPU 跨度与 CPU 区间之差 < 0.2 ms，未列出。）
+
+- v2–v4 的 decode：GPU 忙碌时间都明显小于 CPU 区间。CPU 区间减去 launch API 时间：FP16 17.9，v2 33.1，v3 36.1，v4 29.6 ms。
+- v3：每个 Linear 1 个融合 kernel（`triton_poi_fused__to_copy_mul_sub_0`，113 次 / 步，共 7.27 ms）+ cuBLAS。
+- v4：GPU 忙碌 6.58 ms **比 FP16 的 5.56 ms 多**。`_int4_gemv_kernel` 113 次 / 步共 2.97 ms；split-K 带来的清零（`FillFunctor`）112 次共 0.33 ms，`.half()`（`float16_copy`）比 FP16 多 112 次。
+
+v4 的 `_int4_gemv_kernel` 按形状拆分（A100，decode 每步）：
+
+| 形状 N×K | grid（N/BLOCK_N, split） | 次数 / 步 | 单次 µs | 有效带宽（0.53 B / 权重） |
+|---|---|---:|---:|---:|
+| w1 / w3 8192×2048 | (64, 4) | 32 | 35.7 | ≈ 250 GB/s |
+| w2 2048×8192 | (16, 16) | 16 | 36.9 | ≈ 240 GB/s |
+| wq / wo 2048×2048 | (16, 8) | 32 | 15.9 | ≈ 140 GB/s |
+| wk / wv 512×2048 | (4, 8) | 32 | 12.2 | – |
+| lm_head 128256×2048 | (1002, 1) | 1 | 341 | ≈ 410 GB/s |
+
+A100 1 GiB copy 为 1378 GB/s（E4b）；FP16 decode 的 lm_head GEMM 为 406 µs（E5）。
+
+**T3 峰值显存**（`mem_snapshot.py`，bs=1，1 次 prefill + 3 步 decode）
+
+| | static | peak | 峰值时多出的块 |
+|---|---:|---:|---|
+| v1 | 1145 | 4535 | 3390 MB / 9 块（E3） |
+| v2 | 1145 | 2272 | 1127 MB / 7 块：2 × 751.5 MB `quantize.py:123`、3 × 125.2 MB（`quantize.py:120–121`、上一步 logits） |
+| v3 | 1145 | 1771 | 626 MB / 5 块：501 MB `quantize.py:124`（lm_head 的 fp16 权重）+ 125.2 MB logits |
+| v4 | 1145 | 1710 | 565 MB / 4 块：501 MB `quantize.py:124` + 62.6 MB `quantize.py:146` |
 
 ### I4 CUDA Graph（状态：未开始）
 

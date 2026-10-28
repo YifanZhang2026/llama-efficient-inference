@@ -1,0 +1,25 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[int4] bs=1 in=256: static 1145 MB | peak 4535 MB (replayed 4534) | transient at peak 3390 MB in 9 blocks
+
+alive at peak, grouped by allocation site (top 15):
+     2011.8 MB  x3   llama/quantize.py:102 dequantize_packed
+     1002.0 MB  x1   llama/quantize.py:101 dequantize_packed
+      125.2 MB  x1   llama/model.py:455 forward
+      125.2 MB  x1   llama/quantize.py:95 dequantize_packed
+      125.2 MB  x1   llama/quantize.py:96 dequantize_packed
+        0.0 MB  x1   llama/model.py:75 forward
+        0.0 MB  x1   bench.py:76 run_once
+
+largest single blocks at peak:
+     1002.0 MB  llama/quantize.py:101 dequantize_packed
+     1002.0 MB  llama/quantize.py:102 dequantize_packed
+     1002.0 MB  llama/quantize.py:102 dequantize_packed
+      125.2 MB  llama/model.py:455 forward
+      125.2 MB  llama/quantize.py:95 dequantize_packed
+      125.2 MB  llama/quantize.py:96 dequantize_packed
+        7.8 MB  llama/quantize.py:102 dequantize_packed
+        0.0 MB  llama/model.py:75 forward
+        0.0 MB  bench.py:76 run_once
+
+snapshot: prof/mem_int4_v1_bs1_1029.pickle  (drag into https://pytorch.org/memory_viz)
