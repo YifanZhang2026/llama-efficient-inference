@@ -13,6 +13,7 @@ T4 (EXPERIMENTS.md Part 3 / I3): tune the v4 Triton kernel on this GPU.
 
 Usage:
     python int4_gemv_bench.py --e2e            # sweep + end to end, ~10 min on A100
+    python int4_gemv_bench.py --e2e --cuda-graph --from-csv results/int4_gemv_sweep.csv   # no re-sweep
 """
 import argparse
 import csv
@@ -138,10 +139,18 @@ def e2e(a, real_int4, best):
         tokens = torch.randint(0, model.params.vocab_size, (1, a.input_len), device="cuda")
         for _ in range(3):
             bench.run_once(model, tokens, a.output_len)
-        reps = [bench.run_once(model, tokens, a.output_len) for _ in range(10)]
+        if a.cuda_graph:
+            graphs = bench.DecodeGraphs(model, 1, a.input_len, a.output_len)
+            same = torch.equal(graphs.tokens(tokens), bench.eager_tokens(model, tokens, a.output_len))
+            print(f"  graph tokens == eager tokens: {same}", flush=True)
+            bench.run_once_graph(graphs, tokens, a.output_len)
+            reps = [bench.run_once_graph(graphs, tokens, a.output_len) for _ in range(10)]
+            del graphs
+        else:
+            reps = [bench.run_once(model, tokens, a.output_len) for _ in range(10)]
         steps = [s for _, d in reps for s in d]
         dec = statistics.median(steps)
-        label = mode if not tag else f"v4-{tag}"
+        label = (mode if not tag else f"v4-{tag}") + ("+graph" if a.cuda_graph else "")
         print(f"[e2e bs=1] {label:<12} decode {dec:.3f} ms/step | prefill {statistics.median(p for p, _ in reps):.2f} ms", flush=True)
         rows.append({"config": label, "decode_ms": round(dec, 3), "time": datetime.datetime.now().isoformat(timespec="seconds")})
         del model, tokens
@@ -169,10 +178,22 @@ def main():
     p.add_argument("--output-len", type=int, default=32)
     p.add_argument("--csv", default="results/int4_gemv_sweep.csv")
     p.add_argument("--e2e-csv", default="results/int4_gemv_e2e.csv")
+    p.add_argument("--from-csv", help="skip the sweep; take per-shape best configs from this sweep CSV (latest rows win)")
+    p.add_argument("--cuda-graph", action="store_true", help="end to end with bench.DecodeGraphs")
     a = p.parse_args()
     real_int4 = int4_linear_fn()
-    rows, best = sweep(a, real_int4)
-    write(a.csv, rows)
+    if a.from_csv:
+        best = {}
+        for r in csv.DictReader(open(a.from_csv)):
+            if r["gpu"] != torch.cuda.get_device_name(0):
+                continue
+            key = (int(r["N"]), int(r["K"]), int(r["M"]))
+            best[key + ("any",)] = dict(block_n=int(r["best_block_n"]), num_warps=int(r["best_warps"]), split_k=int(r["best_split"]))
+            best[key + ("split1",)] = dict(block_n=int(r["split1_block_n"]), num_warps=int(r["split1_warps"]), split_k=1)
+        print(f"loaded {len(best)} configs from {a.from_csv}")
+    else:
+        rows, best = sweep(a, real_int4)
+        write(a.csv, rows)
     if a.e2e:
         write(a.e2e_csv, e2e(a, real_int4, best))
 
