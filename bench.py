@@ -30,6 +30,7 @@ import datetime
 import gc
 import os
 import statistics
+import time
 from contextlib import nullcontext
 
 import torch
@@ -88,6 +89,86 @@ def run_once(model, tokens, output_len, use_nvtx=False):
     return prefill_ms, decode_ms
 
 
+class DecodeGraphs:
+    """CUDA graphs for the decode steps (EXPERIMENTS.md Part 3 / I4).
+
+    start_pos is a Python int baked into the captured kernels (RoPE slice, KV-cache
+    write offset), so there is one graph per decode position, all sharing one memory
+    pool and replayed in capture order. Each graph reads the static token buffer and
+    writes the next greedy token back into it, so replays chain on the GPU with no
+    host work between steps. Prefill stays eager.
+    """
+
+    @torch.inference_mode()
+    def __init__(self, model, bs, input_len, output_len):
+        self.model, self.input_len = model, input_len
+        self.tok = torch.zeros(bs, 1, dtype=torch.long, device="cuda")
+        n = output_len - 1
+        side = torch.cuda.Stream()
+        side.wait_stream(torch.cuda.current_stream())
+        with torch.cuda.stream(side):  # warm up every position on a side stream before capture
+            for i in range(n):
+                self._step(i)
+        torch.cuda.current_stream().wait_stream(side)
+        self.graphs, pool = [], None
+        for i in range(n):
+            g = torch.cuda.CUDAGraph()
+            with torch.cuda.graph(g, pool=pool):
+                self._step(i)
+            pool = g.pool()
+            self.graphs.append(g)
+        torch.cuda.synchronize()
+
+    def _step(self, i):
+        logits = self.model(self.tok, self.input_len + i)
+        self.tok.copy_(logits[:, -1].argmax(-1, keepdim=True))
+
+    @torch.inference_mode()
+    def prefill(self, tokens):
+        logits = self.model(tokens, 0)
+        self.tok.copy_(logits[:, -1].argmax(-1, keepdim=True))
+
+    @torch.inference_mode()
+    def tokens(self, tokens):
+        """Greedy tokens from graph replay, for the equality check against eager."""
+        self.prefill(tokens)
+        out = [self.tok.clone()]
+        for g in self.graphs:
+            g.replay()
+            out.append(self.tok.clone())
+        return torch.cat(out, 1)
+
+
+@torch.inference_mode()
+def eager_tokens(model, tokens, output_len):
+    _, input_len = tokens.shape
+    nxt = model(tokens, 0)[:, -1].argmax(-1, keepdim=True)
+    out = [nxt]
+    for i in range(output_len - 1):
+        nxt = model(nxt, input_len + i)[:, -1].argmax(-1, keepdim=True)
+        out.append(nxt)
+    return torch.cat(out, 1)
+
+
+@torch.inference_mode()
+def run_once_graph(graphs, tokens, output_len, use_nvtx=False):
+    """Same timing as run_once, decode steps replayed from DecodeGraphs."""
+    n_decode = output_len - 1
+    events = [torch.cuda.Event(enable_timing=True) for _ in range(n_decode + 2)]
+    events[0].record()
+    with nvtx("prefill", use_nvtx):
+        graphs.prefill(tokens)
+    events[1].record()
+    for i, g in enumerate(graphs.graphs):
+        with nvtx(f"decode_{i}", use_nvtx):
+            g.replay()
+        events[i + 2].record()
+    torch.cuda.synchronize()
+    prefill_ms = events[0].elapsed_time(events[1])
+    decode_ms = [events[i].elapsed_time(events[i + 1]) for i in range(1, n_decode + 1)]
+    return prefill_ms, decode_ms
+
+
 def kv_cache_mb(args, bs, max_seq_len):
     head_dim = args.dim // args.n_heads
     nbytes = 2 * args.n_layers * bs * max_seq_len * args.n_kv_heads * head_dim * 2
@@ -108,16 +189,27 @@ def bench_config(state_dict, mode, bs, a):
         if w == 0:
             cold = p + sum(d)
 
+    once = lambda use_nvtx: run_once(model, tokens, a.output_len, use_nvtx=use_nvtx)
+    if a.cuda_graph:
+        t0 = time.perf_counter()
+        graphs = DecodeGraphs(model, bs, a.input_len, a.output_len)
+        capture_s = time.perf_counter() - t0
+        same = torch.equal(graphs.tokens(tokens), eager_tokens(model, tokens, a.output_len))
+        print(f"[{mode}] bs={bs}: captured {len(graphs.graphs)} decode graphs in {capture_s:.1f} s | "
+              f"graph tokens == eager tokens: {same}")
+        once = lambda use_nvtx: run_once_graph(graphs, tokens, a.output_len, use_nvtx=use_nvtx)
+        once(False)  # one replayed rep as warmup
+
     torch.cuda.reset_peak_memory_stats()
 
     if a.profile:
         torch.cuda.profiler.start()
-        run_once(model, tokens, a.output_len, use_nvtx=True)
+        once(True)
         torch.cuda.profiler.stop()
         print(f"[{mode}] bs={bs}: profiled 1 rep")
         reps = []
     else:
-        reps = [run_once(model, tokens, a.output_len, use_nvtx=a.nvtx) for _ in range(a.iters)]
+        reps = [once(a.nvtx) for _ in range(a.iters)]
 
     peak_mb = torch.cuda.max_memory_allocated() / 2**20
     del model, tokens
@@ -131,7 +223,7 @@ def bench_config(state_dict, mode, bs, a):
     e2e = [p + sum(d) for p, d in reps]
     q = statistics.quantiles(steps, n=10)
     row = {
-        "mode": mode if mode != "int4" or a.impl == "v1" else f"int4-{a.impl}",
+        "mode": (mode if mode != "int4" or a.impl == "v1" else f"int4-{a.impl}") + ("+graph" if a.cuda_graph else ""),
         "bs": bs,
         "input_len": a.input_len,
         "output_len": a.output_len,
@@ -180,6 +272,8 @@ def parse_args():
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--iters", type=int, default=10)
     p.add_argument("--nvtx", action="store_true", help="NVTX ranges during timed reps")
+    p.add_argument("--cuda-graph", action="store_true",
+                   help="replay decode steps from CUDA graphs (one per position); CSV mode gets +graph")
     p.add_argument("--profile", action="store_true",
                    help="run one NVTX-annotated rep between cudaProfilerStart/Stop, no CSV")
     p.add_argument("--csv", default="results/bench.csv")
