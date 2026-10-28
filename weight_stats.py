@@ -36,8 +36,9 @@ def kind_of(key):
 
 
 def write_csv(path, rows):
+    fields = list(dict.fromkeys(k for r in rows for k in r))  # union, first-seen order
     with open(path, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w = csv.DictWriter(f, fieldnames=fields, restval="")
         w.writeheader()
         w.writerows(rows)
     print(f"wrote {len(rows)} rows to {path}")
@@ -53,6 +54,9 @@ def main():
     sd = torch.load(os.path.join(CKPT_DIR, "consolidated.00.pth"), map_location="cpu", weights_only=True, mmap=True)
     keys = [k for k in sd if k.endswith(".weight") and kind_of(k) and sd[k].dim() == 2]
     print(f"{len(keys)} 2-D weights")
+    if "output.weight" in sd and "tok_embeddings.weight" in sd:
+        print(f"output.weight == tok_embeddings.weight (torch.equal): "
+              f"{torch.equal(sd['output.weight'], sd['tok_embeddings.weight'])}")
 
     mom = collections.defaultdict(lambda: torch.zeros(5, dtype=torch.float64))  # n, s1, s2, s3, s4
     amax = collections.defaultdict(float)
