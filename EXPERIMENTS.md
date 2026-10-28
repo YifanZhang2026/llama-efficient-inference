@@ -142,7 +142,7 @@ sym7、sym8 在 **113 / 113** 层上都比 asym 差。
 | tok_embeddings（不量化） | 262.7 M | −1.07e-4 | 0.02191 | −0.0049 | 0.43 | 0.346 | 15.8 |
 
 - 所有层类的均值 / 标准差都在 ±0.005 以内。
-- `output` 与 `tok_embeddings` 的所有统计量（包括 (c) 的离群列下标）完全相同；是否为同一份权重（tied）待 `torch.equal` 确认（`weight_stats.py` 已加该检查，待重跑）。
+- `output` 与 `tok_embeddings` 的所有统计量（包括 (c) 的离群列下标）完全相同；`torch.equal(output.weight, tok_embeddings.weight)` = **True**（`logs/weight_stats_1028b.log`，2026-10-29）：checkpoint 中两者是同一份权重（tied），只是本仓库的模型代码把它们加载成两个独立张量。按不重复计数，参数量是 1,498,482,688 − 262,668,288 = 1,235,814,400。
 
 （b）**zero_point 直方图**（各层类 zp = 7 和 zp = 8 各占 34–38%，zp ∈ [6, 9] 合计 95–97%；平均 zp 7.50，output 7.54；对称的组 zp ≈ 7.5）与**每组偏斜度** s = (max + min)/(max − min)：
 
