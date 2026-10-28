@@ -16,6 +16,7 @@ Usage:
     python bench.py --mode fp16 --bs 1 8 16
     python bench.py --mode int4 --bs 1 8 16
     python bench.py --mode moe-slice --bs 1
+    python bench.py --mode int4 --impl v2 --bs 1 8 16   # dequant versions, EXPERIMENTS.md Part 3
 
 Profile one rep with Nsight Systems (only the region between
 cudaProfilerStart/Stop is captured):
@@ -37,7 +38,7 @@ from llama.config import CKPT_DIR
 from llama.model import ModelArgs, Llama
 
 
-def build_model(state_dict, bs, max_seq_len, mode, group_size):
+def build_model(state_dict, bs, max_seq_len, mode, group_size, impl="v1"):
     args = ModelArgs()
     args.max_batch_size = bs
     args.max_seq_len = max_seq_len
@@ -49,8 +50,9 @@ def build_model(state_dict, bs, max_seq_len, mode, group_size):
     model.eval()
 
     if mode == "int4":
-        from llama.quantize import quantize_model
+        from llama.quantize import quantize_model, set_dequant_impl
         quantize_model(model, group_size=group_size)
+        set_dequant_impl(impl)
     elif mode.startswith("moe-"):
         from llama.moe import convert_to_moe
         convert_to_moe(model, num_experts=4, top_k=2, init_mode=mode[len("moe-"):])
@@ -95,7 +97,7 @@ def kv_cache_mb(args, bs, max_seq_len):
 def bench_config(state_dict, mode, bs, a):
     max_seq_len = a.input_len + a.output_len
     torch.manual_seed(0)
-    model = build_model(state_dict, bs, max_seq_len, mode, a.group_size)
+    model = build_model(state_dict, bs, max_seq_len, mode, a.group_size, a.impl)
     torch.cuda.synchronize()
     static_mb = torch.cuda.memory_allocated() / 2**20
     tokens = torch.randint(0, model.params.vocab_size, (bs, a.input_len), device="cuda")
@@ -129,7 +131,7 @@ def bench_config(state_dict, mode, bs, a):
     e2e = [p + sum(d) for p, d in reps]
     q = statistics.quantiles(steps, n=10)
     row = {
-        "mode": mode,
+        "mode": mode if mode != "int4" or a.impl == "v1" else f"int4-{a.impl}",
         "bs": bs,
         "input_len": a.input_len,
         "output_len": a.output_len,
@@ -173,6 +175,8 @@ def parse_args():
     p.add_argument("--input-len", type=int, default=256)
     p.add_argument("--output-len", type=int, default=32)
     p.add_argument("--group-size", type=int, default=128)
+    p.add_argument("--impl", default="v1", choices=["v1", "v2", "v3", "v4"],
+                   help="INT4 dequant version (EXPERIMENTS.md Part 3); CSV mode becomes int4-<impl>")
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--iters", type=int, default=10)
     p.add_argument("--nvtx", action="store_true", help="NVTX ranges during timed reps")
@@ -186,7 +190,7 @@ def main():
     a = parse_args()
     assert a.warmup >= 1 and a.iters >= 2 and a.output_len >= 2
     print(f"GPU: {torch.cuda.get_device_name(0)} | torch {torch.__version__} | mode={a.mode} "
-          f"in={a.input_len} out={a.output_len} warmup={a.warmup} iters={a.iters}")
+          f"impl={a.impl} in={a.input_len} out={a.output_len} warmup={a.warmup} iters={a.iters}")
     state_dict = torch.load(os.path.join(CKPT_DIR, "consolidated.00.pth"),
                             map_location="cpu", weights_only=True, mmap=True)
     rows = [r for bs in a.bs if (r := bench_config(state_dict, a.mode, bs, a)) is not None]

@@ -103,6 +103,28 @@ class QuantizedLinear(nn.Module):
 
         return w_fp16.reshape(out_features, in_features).half()
 
+    @staticmethod
+    def dequantize_packed_v2(packed_weight, scale, zero_point, group_size):
+        """
+        Same result as dequantize_packed (bit-identical), fewer HBM bytes:
+          - no `& 0x0F` after `>> 4` (a uint8 shifted right by 4 is already 0..15)
+          - interleave with one contiguous stack instead of two strided writes
+          - fp16 math instead of fp32: (q - zp) is a small exact integer, so the
+            only rounding is the multiply by scale, same as fp32 then .half()
+          - in-place sub_ / mul_, one fp16 buffer instead of three fp32 ones
+        """
+        out_features = packed_weight.shape[0]
+        in_features = packed_weight.shape[1] * 2
+        n_groups = in_features // group_size
+
+        w_even = packed_weight & 0x0F
+        w_odd = packed_weight >> 4
+        # [out, in/2, 2] -> flattened order e0, o0, e1, o1, ... (matches the packing)
+        w = torch.stack((w_even, w_odd), dim=-1).view(out_features, n_groups, group_size).half()
+        w.sub_(zero_point.unsqueeze(-1)).mul_(scale.unsqueeze(-1))
+
+        return w.view(out_features, in_features)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass: dequantize weights, then do matmul.
@@ -113,8 +135,12 @@ class QuantizedLinear(nn.Module):
         Returns:
             output tensor of shape (..., out_features)
         """
-        # Dequantize weights from INT4 to FP16
-        weight = self.dequantize_packed(self.packed_weight, self.scale, self.zero_point, self.group_size)
+        # v4: fused dequant + GEMV kernel for decode-sized inputs (M <= 16 tokens)
+        if DEQUANT_IMPL == "v4" and self.bias is None and x.numel() // x.shape[-1] <= 16:
+            return int4_linear_fn()(x, self.packed_weight, self.scale, self.zero_point, self.group_size)
+
+        # Dequantize weights from INT4 to FP16 (v4 falls back to v3 for prefill)
+        weight = dequant_fn(DEQUANT_IMPL)(self.packed_weight, self.scale, self.zero_point, self.group_size)
 
         # Standard linear operation
         output = F.linear(x, weight, self.bias)
@@ -145,6 +171,49 @@ class QuantizedLinear(nn.Module):
             ql.bias.copy_(linear.bias.data.half())
 
         return ql
+
+
+# Which dequant every QuantizedLinear uses (EXPERIMENTS.md Part 3):
+#   v1  original eager implementation
+#   v2  eager, fp16 + contiguous interleave + in-place
+#   v3  v2 fused into one kernel by torch.compile (compiled on first use)
+#   v4  fused int4 dequant + GEMV Triton kernel (llama/int4_gemv.py) for M <= 16, else v3
+DEQUANT_IMPL = "v1"
+_compiled_v2 = None
+_int4_linear = None
+
+
+def set_dequant_impl(impl: str):
+    global DEQUANT_IMPL
+    assert impl in ("v1", "v2", "v3", "v4"), impl
+    DEQUANT_IMPL = impl
+
+
+def dequant_fn(impl: str):
+    global _compiled_v2
+    if impl == "v1":
+        return QuantizedLinear.dequantize_packed
+    if impl == "v2":
+        return QuantizedLinear.dequantize_packed_v2
+    if impl in ("v3", "v4"):
+        if _compiled_v2 is None:
+            # dynamic=False: 6 distinct weight shapes in Llama 3.2-1B, one static kernel each
+            _compiled_v2 = torch.compile(QuantizedLinear.dequantize_packed_v2, dynamic=False)
+        return _compiled_v2
+    raise ValueError(impl)
+
+
+def int4_linear_fn():
+    global _int4_linear
+    if _int4_linear is None:
+        import importlib.util, os
+        # by path, so this also works when quantize.py itself was loaded by path (dequant_traffic.py)
+        spec = importlib.util.spec_from_file_location(
+            "llama_int4_gemv", os.path.join(os.path.dirname(os.path.abspath(__file__)), "int4_gemv.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _int4_linear = mod.int4_linear
+    return _int4_linear
 
 
 def quantize_model(model, group_size=128):

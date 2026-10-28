@@ -477,6 +477,143 @@ ncu --profile-from-start off --metrics dram__bytes_op_read.sum,dram__bytes_op_wr
 
 ---
 
+## 现阶段待做（2026-10-28 整理）
+
+> 主线：INT4 dequant 优化（Part 3）。每项先写预测再测量，结果写回对应小节。"A100" 指 AutoDL 服务器，"本机" 指 RTX 5070 Laptop（conda env `dp`，可以用 ncu，没有 ckpt）。
+
+### A. Part 3 主线（按顺序做）
+
+| # | 实验 | 在哪 | 命令 / 做法 | 预测 | 写回 |
+|---|---|---|---|---|---|
+| T1 | **v1–v4 端到端** | A100 | `bench.py --mode int4 --impl {v1,v2,v3,v4} --bs 1 8 16`，再加一组 `--mode fp16` 作为同一时段的基线 | bs=1 decode：v1 40.5 → v2 约 22–25 → v3 Yifan 预测 → v4 约 15 ms（launch-bound，**不会比 FP16 快**） | I1–I3 的"结果" |
+| T2 | **瓶颈是否转移**（nsys） | A100 | 每个版本 bs=1 `--profile` 一次，看：每次 forward 的 kernel 数、GPU 忙碌时间、最后一次同步的等待时间、v4 每个 Linear 在 CPU 上花多少时间（Triton 从 Python 发射的开销） | 最后一次同步的等待时间：v1 为 7.6 ms，v2 及以后接近 0（变回 launch-bound）；v4 的 GPU 时间小于 FP16 | I1–I3 |
+| T3 | **峰值显存** | A100 | `mem_snapshot.py --mode int4 --impl {v1..v4} --bs 1` | 峰值出现在 prefill 里，而 v4 的 prefill 走的是 v3，所以 v3 和 v4 的峰值应该相同。多出的部分主要是 lm_head 的 fp16 权重（525 MB）加上 logits；v2 约 1.1 GB；v1 为 3.4 GB | I1–I3 |
+| T4 | **v4 调参：split-K 还是小 BLOCK_N** | A100 | 单层：6 种形状 × M ∈ {1, 8, 16}，扫 BLOCK_N × num_warps × split；端到端：分别用 (a) 当前的 split-K 和 (b) `split_k=1` 加按 N 选择 BLOCK_N，跑 `bench.py --impl v4` | (b) 的端到端更快：每个 Linear 只发射 1 个 kernel，(a) 要发射 3 个 | I3 |
+| T5 | **v4 的数值影响** | A100 | ⚠️ `eval_ppl.py` 是整段 teacher forcing（M = ctx ≥ 128），**根本走不到 v4**，测出来的 PPL 必然和 v1 一样。要改用逐 token decode（M=1，使用 KV cache）：在 Alpaca 子集上算 NLL，同时统计 v1 和 v4 的 greedy 生成逐 token 一致率 | NLL 差异 < 1e-4，一致率接近 100%；少数分叉出现在 logits 前两名非常接近的位置 | I3 |
+| T6 | **CUDA Graph**（I4） | A100 | 对 decode 的一步做 capture（KV cache 已经预分配，输入 token 和 start_pos 要放进固定的 buffer），FP16 和 INT4 v4 都做 | FP16 约 6 ms（等于 GPU 忙碌时间），v4 约 4–5 ms，**到这一步 INT4 才首次比 FP16 快** | I4 |
+| T7 | 和现成 kernel 对比（可选） | A100 | `torch.ops.aten._weight_int4pack_mm`（tinygemm），需要先转换打包格式；只比单层耗时 | tinygemm 比 v4 快一些 | I3 |
+| T8 | vLLM 作为上限（可选） | A100 | FP16：vLLM 跑 Llama 3.2-1B，测 bs=1 decode；INT4：先确认 RTN 权重能不能转成 GPTQ 格式（zp 的 −1 偏移、打包顺序），能转再测 Marlin | — | 新小节 |
+| T9 | v2–v4 的 HBM 字节数 | 本机 | 用 ncu 读每个 kernel 的 DRAM 读写字节 | v2 约 15 B / 权重，v3 约 2.5 B（加上 matmul 读取共 4.5 B），v4 约 0.53 B | I1–I3 |
+
+需要先补的工具（Claude 写）：`dequant_traffic.py --impl`（T9）；把本机扫参脚本整理成 `int4_gemv_bench.py`（T4）；逐 token decode 的评估脚本（T5）；`bench.py --cuda-graph`（T6）。
+
+Yifan 待填：I2 中的三项预测（每个 Linear 的 kernel 数、dequant 的 GPU 时间、v3 decode 的耗时和瓶颈）。
+
+### B. 实验线遗留（见 EXP_HANDOFF 第 7–11 项）
+
+| # | 实验 | 状态 |
+|---|---|---|
+| 7 | 降频原因（dmon、`-q -d PERFORMANCE`） | 已完成 → E5b（5f3b142） |
+| 8 | 对称 vs 非对称 INT4，权重分布和 zp 直方图 | 已完成 → E1c（权重分布的 csv 和 tied 检查待重跑 `weight_stats.py`） |
+| 9 | FP16 bs=16 比 bs=1 多 0.9 ms：是不是 `repeat_kv` 造成的 | 已完成 → E2c |
+| 11 | INT4 精度损失来自哪些层（不量化 lm_head、按层类型逐一量化） | 已完成 → E1d（含逐层与生成样例） |
+
+第 10 项已经由 Part 3 的 I1、I2 代替。
+
+---
+
+## Part 3：dequant 优化（改进阶段）
+
+> 目标：降低 INT4 decode 中 dequant 的 HBM 搬运量（E4 / E4b：占 GPU 时间 91%，每个权重搬运 34 B）。
+> 每一步都和上一步对比，并且先写预测、再测量。代码由 Yifan 实现；对比开关和测量脚本由 Claude 添加。
+
+### I1 v2：纯 PyTorch 改写 `dequantize_packed`（状态：已实现，`QuantizedLinear.dequantize_packed_v2`；使用 `--impl v2`）
+
+改动（只改 `llama/quantize.py`，保留 v1 方便对照）：
+
+| # | v1 | v2 |
+|---|---|---|
+| A | `(packed >> 4) & 0x0F` | `packed >> 4`（uint8 右移后结果已在 0–15 之间） |
+| B | 两次跨步写 `w_int4[:, 0::2]` / `[:, 1::2]` | `torch.stack((even, odd), -1).view(...)`，连续写 |
+| C | 转为 fp32 计算，最后再 `.half()` | 直接转为 fp16（(q − zp) 是很小的精确整数，只在乘 scale 时舍入一次，结果与 v1 逐位相同） |
+| D | `-`、`*` 各生成一个新的 1 GB 张量 | 原地运算 `sub_` / `mul_` |
+
+预测：
+
+| 指标 | v1 实测 | v2 预测 |
+|---|---:|---:|
+| dequant 字节 / 权重 | 34（ncu） | 约 15（加上 matmul 读取共约 17） |
+| 每个 Linear 的 dequant kernel 数 | 11 | 5 |
+| lm_head 单层 dequant（A100） | 7.2 ms | 约 3.4 ms |
+| bs=1 峰值时多出的显存 | 3.4 GB | 约 1.1 GB |
+| 输出 | – | 与 v1 逐位相同（`torch.equal`） |
+| INT4 decode / 步（A100, bs=1） | 40.5 ms | 约 22–25 ms |
+| 瓶颈 | GPU-bound（最后一次同步等待 7.6 ms） | **预计变回 launch-bound**：GPU 约 22 ms，CPU 需要发射约 1,245 个 kernel，约 25 ms |
+
+验证（本机 = RTX 5070 Laptop，服务器 = A100）：
+
+1. 本机：`dequant_traffic.py --impl v1/v2` 做逐位比较，测单层耗时比值；用 ncu 测每个 kernel 的 DRAM 字节数。
+2. 服务器：`check_impl.py`；`bench.py --mode int4 --bs 1 8 16`；`mem_snapshot.py --mode int4 --bs 1`；nsys 采集一次，看最后一次同步的等待时间。
+3. 只要逐位相同，PPL 就不用重测。
+
+结果：
+
+- 正确性（本机 RTX 5070 Laptop，随机权重 × 0.02，g128；2026-10-25）：形状 2048×2048、512×2048、8192×2048、2048×8192、128256×2048 全部测试，v2 和 v3 的输出都与 v1 **`torch.equal` 为 True**，dtype 为 fp16，内存连续。
+
+### I2 v3：`torch.compile` 融合 dequant（状态：已实现，`quantize.dequant_fn("v3")`；使用 `--impl v3`）
+
+改动：`_dequant_compiled = torch.compile(QuantizedLinear.dequantize_packed_v2, dynamic=False)`，`forward` 改为调用编译版。**只编译 dequant**，不编译整个模型，避免 FP16 基线一起变化。`dynamic=False`：113 个 Linear 共 6 种形状，每种编译一次。
+
+性质：算子融合由编译器（Inductor 生成 Triton kernel）完成，**不是手写**。这一步的作用是给 I3 提供基线。
+
+| 指标 | v2 预测 | v3 预测 |
+|---|---:|---:|
+| dequant 字节 / 权重 | 约 15 | 2.5（读 0.5 B，写 fp16 2 B）；加上 matmul 读取共 4.5 |
+| 每个 Linear 的 dequant kernel 数 | 5 | Yifan 预测： |
+| 一次 forward 的 dequant GPU 时间（A100） | 约 16 ms | Yifan 预测： |
+| INT4 decode / 步，瓶颈 | 约 22–25 ms，launch-bound | Yifan 预测： |
+| 输出 | 与 v1 逐位相同 | 预期逐位相同（Inductor 在 fp32 下计算，只舍入一次），需用 `torch.equal` 实测 |
+
+附带对照：把 v1 也用 compile 编译。预期速度和 v3 几乎一样，因为融合以后 fp32 中间值和跨步写都只在寄存器里。用来说明哪些优化可以交给编译器。
+
+验证：同 I1；另外用 `TORCH_LOGS=output_code` 导出生成的 Triton kernel，确认每层只有 1 个；`cold_e2e_ms` 包含编译时间，要单独标注。
+
+无法再优化的部分：Inductor 无法融合 cuBLAS（`F.linear` 属于外部 kernel），fp16 权重仍然要完整写回 HBM 再读一次。
+
+结果：
+
+### I3 v4：Triton 融合 dequant + GEMV（状态：已实现，`llama/int4_gemv.py`；使用 `--impl v4`）
+
+目标：int4 权重从 HBM 读进来，在寄存器里反量化后直接做乘加，fp16 权重不再经过 HBM。每个权重搬 0.5 B，加上 scale / zp 共约 0.53 B。
+
+> 代码由 Claude 应 Yifan 要求编写（2026-10-25）。面试前 Yifan 需要能逐行解释。
+
+设计：
+- 一个 program 负责 BLOCK_N 个输出，沿 K 方向每次处理一个 group（BLOCK_K = 128）。这样每行每次只需要读一个 scale 和一个 zp。
+- 不做交错：y = 低 4 位 · x[0::2] + 高 4 位 · x[1::2]。
+- dequant 先舍入成 fp16，保证权重和 v1 逐位相同；只有 fp32 累加的顺序和 cuBLAS 不一样。
+- M = 1 时用广播乘加 `tl.sum`；1 < M ≤ 16 时把 M 补到 16，用 `tl.dot`。
+- N 太小、program 不够填满 SM 时用 split-K：结果用 atomic_add 累加到 fp32 缓冲区，最后转成 fp16。代价是多 2 个 kernel。
+- 只在 decode（M ≤ 16）时走 v4；prefill 退回 v3。
+
+正确性（本机，随机权重）：5 种形状 × M ∈ {1, 8, 16}，v4 与 fp32 参考值的最大误差，和 cuBLAS（v1 权重 + `F.linear`）与参考值的误差在同一量级（约 1e-3）。`QuantizedLinear` 用 v4 时，decode 输出与 v1 的差 ≤ 1e-3，不是逐位相同；prefill 走 v3，逐位相同。**接入模型后需要重测 PPL。**
+
+单层耗时（本机 RTX 5070 Laptop，`triton.testing.do_bench`，`results/int4_gemv_sweep_local_1025.log`；笔记本 GPU 波动较大，小形状的权重可能整块留在 L2 里，因此只看比值）：
+
+| 形状 N×K | M | fp16 F.linear | v1 | v2 | v3 | **v4** | v4 / fp16 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 2048×2048（wq/wo） | 1 | 47 µs | 259 | 171 | 73 | **22** | 0.48× |
+| 512×2048（wk/wv） | 1 | 16 | 107 | 71 | 35 | **18** | 1.16× |
+| 8192×2048（w1/w3） | 1 | 121 | 2105 | 1158 | 351 | **45** | 0.37× |
+| 2048×8192（w2） | 1 | 112 | 1759 | 902 | 225 | **44** | 0.40× |
+| 128256×2048（lm_head） | 1 | 1861 | 37855 | 21687 | 4649 | **570** | 0.31× |
+| 128256×2048（lm_head） | 16 | 1823 | 36464 | 21802 | 4865 | **577** | 0.32× |
+
+- 字节数比是 0.53 / 2 = 0.27×。lm_head 实测 0.31×，达到了本机拷贝带宽的约 80%。
+- wk/wv 这类小层每个只有约 0.5 MB，耗时主要是固定开销，所以 v4 并不比 fp16 快。
+- **split-K 和 launch-bound 的冲突**（2026-10-25 读代码时发现）：按 A100 的 108 个 SM 算，bs=1 时除 lm_head 外所有层都会走 split-K，每个 Linear 要发射 3 个 kernel（`zeros` + kernel + `.half()`），112 层共 336 次，而不是 112 次。decode 本来就是 launch-bound，这会增加 CPU 时间。A100 上要对比：(a) split-K；(b) 不拆分、把 BLOCK_N 调小（本机 2048×2048 时 bn=32、不拆分最快）。比较标准是**端到端 decode 时间**，不是单个 kernel 的耗时。
+- 待在 A100 上做：见"现阶段待做"中的 T1–T7。注意：PPL 评估是整段输入（M ≥ 128），走不到 v4，要用逐 token decode 才能测出 v4 的数值影响（T5）。
+
+结果（A100）：
+
+### I4 CUDA Graph（状态：未开始）
+
+v2 之后 INT4 decode 预计是 launch-bound，CPU 发射时间约 15 ms 以上，比 GPU 时间长。用 CUDA Graph 消除发射开销后，才能看到 v4 在 GPU 时间上的优势。FP16 也要同样加 Graph 再对比。
+
+结果：
+
+---
+
 ## 问题记录
 
 > 每个问题一条。面试讲"遇到了什么问题"就照这个讲。

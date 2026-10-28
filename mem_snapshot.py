@@ -59,14 +59,16 @@ def main():
     p.add_argument("--input-len", type=int, default=256)
     p.add_argument("--output-len", type=int, default=4, help="1 prefill + (output_len-1) decode steps")
     p.add_argument("--group-size", type=int, default=128)
+    p.add_argument("--impl", default="v1", choices=["v1", "v2", "v3", "v4"], help="INT4 dequant version")
     p.add_argument("--top", type=int, default=15)
     p.add_argument("--out", default=None, help="snapshot path (default prof/mem_<mode>_bs<bs>.pickle)")
     a = p.parse_args()
-    out = a.out or f"prof/mem_{a.mode}_bs{a.bs}.pickle"
+    tag = a.mode if a.mode != "int4" or a.impl == "v1" else f"int4-{a.impl}"
+    out = a.out or f"prof/mem_{tag}_bs{a.bs}.pickle"
 
     state_dict = torch.load(os.path.join(CKPT_DIR, "consolidated.00.pth"),
                             map_location="cpu", weights_only=True, mmap=True)
-    model = build_model(state_dict, a.bs, a.input_len + a.output_len, a.mode, a.group_size)
+    model = build_model(state_dict, a.bs, a.input_len + a.output_len, a.mode, a.group_size, a.impl)
     tokens = torch.randint(0, model.params.vocab_size, (a.bs, a.input_len), device="cuda")
     run_once(model, tokens, a.output_len)  # warmup
 
@@ -87,7 +89,7 @@ def main():
     trace = snap["device_traces"][0]
     peak, live = live_at_peak(trace, baseline)
     MB = 2**20
-    print(f"[{a.mode}] bs={a.bs} in={a.input_len}: static {baseline / MB:.0f} MB | "
+    print(f"[{tag}] bs={a.bs} in={a.input_len}: static {baseline / MB:.0f} MB | "
           f"peak {torch_peak / MB:.0f} MB (replayed {peak / MB:.0f}) | "
           f"transient at peak {(peak - baseline) / MB:.0f} MB in {len(live)} blocks")
 

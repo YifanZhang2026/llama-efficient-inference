@@ -1,0 +1,11 @@
+NVIDIA GeForce RTX 5070 Laptop GPU copy 304 GB/s
+N=  2048 K=2048 M= 1 fp16=   46.6us v1=  259.0us v2=  171.2us v3=   72.7us v4 default=   22.2us v4 best=   23.2us | best bn=32 warps=8 split=1 | v4 default 100 GB/s (33% copy), fp16 180 GB/s
+N=  2048 K=2048 M=16 fp16=   32.8us v1=  266.9us v2=  163.2us v3=   63.3us v4 default=   29.7us v4 best=   27.6us | best bn=64 warps=8 split=auto | v4 default 75 GB/s (25% copy), fp16 256 GB/s
+N=   512 K=2048 M= 1 fp16=   15.8us v1=  106.8us v2=   70.5us v3=   35.2us v4 default=   18.3us v4 best=   15.9us | best bn=16 warps=8 split=1 | v4 default 30 GB/s (10% copy), fp16 133 GB/s
+N=   512 K=2048 M=16 fp16=   18.2us v1=  115.0us v2=   74.9us v3=   32.4us v4 default=   18.0us v4 best=   18.1us | best bn=64 warps=4 split=auto | v4 default 31 GB/s (10% copy), fp16 115 GB/s
+N=  8192 K=2048 M= 1 fp16=  120.9us v1= 2104.8us v2= 1157.7us v3=  351.3us v4 default=   45.2us v4 best=   43.2us | best bn=64 warps=2 split=auto | v4 default 197 GB/s (65% copy), fp16 277 GB/s
+N=  8192 K=2048 M=16 fp16=  124.8us v1= 2200.2us v2=  885.5us v3=  220.0us v4 default=   63.3us v4 best=   47.2us | best bn=128 warps=8 split=1 | v4 default 141 GB/s (46% copy), fp16 269 GB/s
+N=  2048 K=8192 M= 1 fp16=  111.7us v1= 1759.2us v2=  902.4us v3=  225.4us v4 default=   44.2us v4 best=   44.6us | best bn=128 warps=8 split=auto | v4 default 201 GB/s (66% copy), fp16 300 GB/s
+N=  2048 K=8192 M=16 fp16=  104.5us v1= 1790.9us v2=  899.7us v3=  237.1us v4 default=   98.4us v4 best=   77.3us | best bn=128 warps=4 split=auto | v4 default 91 GB/s (30% copy), fp16 321 GB/s
+N=128256 K=2048 M= 1 fp16= 1861.1us v1=37854.6us v2=21687.0us v3= 4648.8us v4 default=  570.1us v4 best=  535.8us | best bn=32 warps=4 split=1 | v4 default 245 GB/s (81% copy), fp16 282 GB/s
+N=128256 K=2048 M=16 fp16= 1823.4us v1=36464.2us v2=21802.1us v3= 4864.5us v4 default=  576.6us v4 best=  536.3us | best bn=128 warps=4 split=1 | v4 default 242 GB/s (80% copy), fp16 288 GB/s
