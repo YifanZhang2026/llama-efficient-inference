@@ -1,0 +1,26 @@
+ncu: /usr/local/cuda/bin/ncu
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+[lm_head] [128256, 2048]: kernels in capture order:
+  lm_head:and_even  packed & 0x0F
+  lm_head:shr       packed >> 4
+  lm_head:and_odd   (..) & 0x0F
+  lm_head:write_even w_int4[:, 0::2] =
+  lm_head:write_odd  w_int4[:, 1::2] =
+  lm_head:float     w_int4.float()
+  lm_head:zp/scale  .float() (tiny)
+  lm_head:sub_zp    w - zp
+  lm_head:mul_scale (..) * scale
+  lm_head:half      .half()
+[wq] [2048, 2048]: kernels in capture order:
+  wq:and_even  packed & 0x0F
+  wq:shr       packed >> 4
+  wq:and_odd   (..) & 0x0F
+  wq:write_even w_int4[:, 0::2] =
+  wq:write_odd  w_int4[:, 1::2] =
+  wq:float     w_int4.float()
+  wq:zp/scale  .float() (tiny)
+  wq:sub_zp    w - zp
+  wq:mul_scale (..) * scale
+  wq:half      .half()
+ncu exit 1

@@ -1,0 +1,15 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | mode=fp16 in=256 out=32 warmup=3 iters=30
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+
+[fp16] bs=1: decode median 15.633 ms | p10 15.324 | p90 16.792 | min 14.378 | max 45.857
+  median by step index: 14.98 15.81 15.54 15.69 15.63 15.66 15.52 15.54 15.55 15.92 15.57 15.75 15.53 15.70 15.49 15.61 15.56 15.79 15.54 15.77 15.55 15.73 15.52 15.59 15.57 15.85 15.57 15.72 15.52 15.74 15.55
+  median by rep:        15.44 15.44 15.40 15.44 16.01 15.61 15.60 15.66 15.96 16.10 15.97 16.29 16.01 16.13 16.46 16.47 15.92 15.96 15.72 15.54 15.48 15.49 15.52 15.51 15.54 15.53 15.52 15.58 15.47 15.50
+  steps < 0.9 x median: 0 / 930
+
+[fp16] bs=16: decode median 16.506 ms | p10 14.108 | p90 16.879 | min 9.607 | max 44.767
+  median by step index: 10.16 10.14 9.80 15.33 16.51 16.54 16.53 16.83 16.57 16.55 16.51 16.43 16.49 16.49 16.55 16.79 16.57 16.48 16.48 16.57 16.61 16.61 16.52 16.70 16.49 16.55 16.59 16.54 16.54 16.54 16.54
+  median by rep:        16.37 16.56 16.55 16.48 16.47 16.54 16.57 16.53 16.54 16.46 16.61 16.65 16.57 16.57 16.64 16.65 16.48 16.69 16.53 16.54 16.35 16.50 16.46 16.47 16.45 16.39 16.56 16.46 16.41 16.47
+  steps < 0.9 x median: 101 / 930
+
+appended 1860 rows to results/decode_steps.csv

@@ -1,0 +1,16 @@
+== dequant_traffic A+B 22:24:47
+== dequant_traffic C (ncu) 22:24:52
+  wq:mul_scale (..) * scale
+  wq:half      .half()
+ncu exit 1
+== quant_sym 22:24:57
+timestamp, power.draw [W], power.limit [W], enforced.power.limit [W], temperature.gpu, temperature.memory, clocks.current.sm [MHz], clocks.current.memory [MHz], clocks.max.sm [MHz], utilization.gpu [%], utilization.memory [%], clocks_event_reasons.active, clocks_event_reasons.gpu_idle, clocks_event_reasons.applications_clocks_setting, clocks_event_reasons.sw_power_cap, clocks_event_reasons.hw_slowdown, clocks_event_reasons.hw_thermal_slowdown, clocks_event_reasons.hw_power_brake_slowdown, clocks_event_reasons.sw_thermal_slowdown, clocks_event_reasons.sync_boost
+2026/10/15 22:26:20.944, 72.28 W, 250.00 W, 250.00 W, 45, 44, 1410 MHz, 1215 MHz, 1410 MHz, 1 %, 0 %, 0x0000000000000000, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+== idle 22:26:20
+== gemm 22:26:35
+== fp16 22:27:13
+== int4 22:28:13
+22:27:10.358,885.3,200.1
+best window 203.3 TFLOPS
+ALL DONE 22:30:38
+ALL DONE 22:30:38

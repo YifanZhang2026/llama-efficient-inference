@@ -1,0 +1,7 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | mode=int4 in=256 out=32 warmup=3 iters=100
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[int4] bs=1: prefill 45.82 ms | decode 40.446 ms/step (p10 40.429, p90 40.483) | e2e 1300.1 ms (cold 1630.2) | peak 4536 MB (static 1137)
+appended 1 rows to results/scratch.csv

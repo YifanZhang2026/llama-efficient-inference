@@ -1,0 +1,59 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | g128
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+113 Linear layers quantized once; fp16 and int4 copies kept on GPU
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+[all          ] 113 Linear,  1235.7 M params | alpaca PPL 11.0276 (+1.367) acc 49.87% KL 0.1572 | wikitext2 PPL 12.2879 (+2.402) acc 48.51% KL 0.2174 (35 s)
+[no_output    ] 112 Linear,   973.1 M params | alpaca PPL 10.8982 (+1.238) acc 50.15% KL 0.1413 | wikitext2 PPL 12.0944 (+2.208) acc 48.76% KL 0.2017 (35 s)
+[only_wq      ]  16 Linear,    67.1 M params | alpaca PPL 9.6759 (+0.016) acc 51.34% KL 0.0041 | wikitext2 PPL 9.9523 (+0.066) acc 51.61% KL 0.0062 (35 s)
+[only_wk      ]  16 Linear,    16.8 M params | alpaca PPL 9.6745 (+0.014) acc 51.23% KL 0.0029 | wikitext2 PPL 9.9336 (+0.047) acc 51.66% KL 0.0046 (35 s)
+[only_wv      ]  16 Linear,    16.8 M params | alpaca PPL 9.8001 (+0.140) acc 51.44% KL 0.0124 | wikitext2 PPL 10.0490 (+0.163) acc 51.50% KL 0.0151 (35 s)
+[only_wo      ]  16 Linear,    67.1 M params | alpaca PPL 9.8127 (+0.152) acc 51.37% KL 0.0128 | wikitext2 PPL 10.0428 (+0.157) acc 51.51% KL 0.0161 (35 s)
+[only_w1      ]  16 Linear,   268.4 M params | alpaca PPL 9.7538 (+0.094) acc 51.92% KL 0.0108 | wikitext2 PPL 10.0350 (+0.149) acc 51.52% KL 0.0136 (34 s)
+[only_w3      ]  16 Linear,   268.4 M params | alpaca PPL 9.7750 (+0.115) acc 51.02% KL 0.0193 | wikitext2 PPL 10.1308 (+0.245) acc 51.35% KL 0.0234 (34 s)
+[only_w2      ]  16 Linear,   268.4 M params | alpaca PPL 10.1090 (+0.449) acc 51.15% KL 0.0636 | wikitext2 PPL 10.8294 (+0.943) acc 50.43% KL 0.0961 (35 s)
+[only_output  ]   1 Linear,   262.7 M params | alpaca PPL 9.7639 (+0.104) acc 51.06% KL 0.0145 | wikitext2 PPL 10.0282 (+0.142) acc 51.49% KL 0.0141 (35 s)
+[only_layer0  ]   7 Linear,    60.8 M params | alpaca PPL 9.7149 (+0.055) acc 51.69% KL 0.0108 | wikitext2 PPL 10.0400 (+0.154) acc 51.54% KL 0.0159 (35 s)
+[only_layer1  ]   7 Linear,    60.8 M params | alpaca PPL 9.7899 (+0.130) acc 51.62% KL 0.0323 | wikitext2 PPL 10.4422 (+0.556) acc 50.90% KL 0.0590 (35 s)
+[only_layer2  ]   7 Linear,    60.8 M params | alpaca PPL 9.7014 (+0.041) acc 51.27% KL 0.0044 | wikitext2 PPL 9.9549 (+0.069) acc 51.65% KL 0.0053 (35 s)
+[only_layer3  ]   7 Linear,    60.8 M params | alpaca PPL 9.6735 (+0.013) acc 51.39% KL 0.0059 | wikitext2 PPL 9.9401 (+0.054) acc 51.66% KL 0.0057 (35 s)
+[only_layer4  ]   7 Linear,    60.8 M params | alpaca PPL 9.6794 (+0.019) acc 51.30% KL 0.0056 | wikitext2 PPL 9.9399 (+0.054) acc 51.67% KL 0.0059 (35 s)
+[only_layer5  ]   7 Linear,    60.8 M params | alpaca PPL 9.6545 (+-0.006) acc 51.30% KL 0.0055 | wikitext2 PPL 9.9540 (+0.068) acc 51.64% KL 0.0059 (35 s)
+[only_layer6  ]   7 Linear,    60.8 M params | alpaca PPL 9.7050 (+0.045) acc 51.46% KL 0.0051 | wikitext2 PPL 9.9494 (+0.063) acc 51.63% KL 0.0062 (35 s)
+[only_layer7  ]   7 Linear,    60.8 M params | alpaca PPL 9.7076 (+0.047) acc 51.02% KL 0.0059 | wikitext2 PPL 9.9765 (+0.090) acc 51.61% KL 0.0073 (35 s)
+[only_layer8  ]   7 Linear,    60.8 M params | alpaca PPL 9.8047 (+0.144) acc 50.94% KL 0.0061 | wikitext2 PPL 9.9567 (+0.070) acc 51.61% KL 0.0079 (35 s)
+[only_layer9  ]   7 Linear,    60.8 M params | alpaca PPL 9.6771 (+0.017) acc 51.34% KL 0.0069 | wikitext2 PPL 9.9736 (+0.087) acc 51.61% KL 0.0084 (35 s)
+[only_layer10 ]   7 Linear,    60.8 M params | alpaca PPL 9.7163 (+0.056) acc 51.16% KL 0.0058 | wikitext2 PPL 9.9645 (+0.078) acc 51.61% KL 0.0079 (35 s)
+[only_layer11 ]   7 Linear,    60.8 M params | alpaca PPL 9.6931 (+0.033) acc 51.08% KL 0.0049 | wikitext2 PPL 9.9555 (+0.069) acc 51.63% KL 0.0065 (35 s)
+[only_layer12 ]   7 Linear,    60.8 M params | alpaca PPL 9.7313 (+0.071) acc 51.44% KL 0.0040 | wikitext2 PPL 9.9511 (+0.065) acc 51.65% KL 0.0058 (34 s)
+[only_layer13 ]   7 Linear,    60.8 M params | alpaca PPL 9.6949 (+0.035) acc 51.64% KL 0.0042 | wikitext2 PPL 9.9396 (+0.053) acc 51.61% KL 0.0060 (35 s)
+[only_layer14 ]   7 Linear,    60.8 M params | alpaca PPL 9.7393 (+0.079) acc 51.25% KL 0.0046 | wikitext2 PPL 9.9576 (+0.071) acc 51.66% KL 0.0065 (35 s)
+[only_layer15 ]   7 Linear,    60.8 M params | alpaca PPL 9.8197 (+0.159) acc 51.41% KL 0.0106 | wikitext2 PPL 10.0012 (+0.115) acc 51.54% KL 0.0121 (35 s)
+appended 52 rows to results/int4_sensitivity.csv
+
+[1] Compose a short poem about the beauty of mathematics.
+  FP16: 'The poem should be no more than 100 words long.\nThe poem should be no more than 100 words long.\nThe poem should be no more than 100 words long.\nThe poem should be no more than 100 words long.\nThe poem'
+  INT4: 'You may use any mathematical concept or term, but you must use at least one mathematical term. The poem must be no more than 10 lines. The poem must be written in English. The poem must be written in '
+
+[2] Write a persuasive paragraph arguing that reading books is better than watching TV.
+  FP16: 'Use at least three pieces of evidence to support your claim.\nThe benefits of reading books are many. Reading books can improve your vocabulary, increase your knowledge, and help you develop your criti'
+  INT4: 'Use at least three reasons to support your argument.\nThe first reason is that reading books is better than watching TV because reading books is a good way to learn new things and to improve your vocab'
+
+[3] Draft a professional email declining a job offer politely.
+  FP16: 'This is a great way to let the employer know that you are not interested in the job. It is also a great way to let the employer know that you are not interested in the job. It is also a great way to l'
+  INT4: 'Here are some tips to help you do it.\nIf you are a professional and you have been offered a job, you should not ignore the offer. You should not ignore the offer because you are not sure whether you s'
+
+[4] If a train travels at 60 mph for 2.5 hours, how far does it go? Show your reasoning.
+  FP16: '(Round your answer to the nearest tenth of a mile.)\nA. 1.5 miles\nB. 1.5 miles\nAnswer: B\nExplanation: A distance is the amount of space between two objects or events. The distance between two states is'
+  INT4: '1. 2. 3. 4. 5. 6. 7. 8. 9. 10. 11. 12. 13. 14. 15. 16. 17. 18. 19. 20. 21.'
+
+[5] What are three key differences between classical and operant conditioning?
+  FP16: 'What are the three key differences between classical and operant conditioning?\nWhat are the three key differences between classical and operant conditioning? What are the three key differences between'
+  INT4: 'What are three key differences between classical and operant conditioning?\nWhat are three key differences between classical and operant conditioning? What are three key differences between classical a'
+
+[6] Explain why the sky appears blue during the day but red at sunset.
+  FP16: 'Why is the sky blue during the day and red at sunset?\nThe sky appears blue during the day because the light from the sun is blue. The light from the sun is made up of different colors. The light from '
+  INT4: 'The sky is blue because it is made up of light reflecting off the ground. The sky is red at sunset because the light is reflected off the ground and the sky is not blue. The sky is blue during the day'
+
+wrote results/int4_generations.md

@@ -1,0 +1,37 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | group 128
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+113 Linear layers
+
+relative MSE ||W - W_hat||^2 / ||W||^2, summed over layers of each kind (x1e-3)
+  kind          asym      sym7      sym8   sym7/asym   sym8/asym
+  wq          11.124    15.722    12.713       1.413       1.143
+  wk          11.756    17.253    13.976       1.468       1.189
+  wv          13.016    19.438    15.692       1.493       1.206
+  wo          11.200    15.578    12.595       1.391       1.125
+  w1          10.635    14.769    11.947       1.389       1.123
+  w3          10.589    14.648    11.850       1.383       1.119
+  w2          10.958    15.440    12.488       1.409       1.140
+  output      11.259    16.048    12.941       1.425       1.149
+  all         10.969    15.441    12.481       1.408       1.138
+  sym7: worse than asym in 113 / 113 layers
+  sym8: worse than asym in 113 / 113 layers
+appended 113 rows to results/quant_sym.csv
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+
+[alpaca ctx=128]
+  fp16   PPL    9.6602 | acc 51.37% | 5711 tokens
+  asym   PPL   11.0276 | acc 49.87% | 5711 tokens | agree 80.00% | KL 0.1572
+  sym7   PPL   11.4149 | acc 48.82% | 5711 tokens | agree 76.29% | KL 0.2125
+  sym8   PPL   11.2894 | acc 48.94% | 5711 tokens | agree 76.19% | KL 0.1835
+
+[wikitext2 ctx=2048]
+  fp16   PPL    9.8862 | acc 51.71% | 288627 tokens
+  asym   PPL   12.2879 | acc 48.51% | 288627 tokens | agree 77.27% | KL 0.2174
+  sym7   PPL   13.4292 | acc 47.36% | 288627 tokens | agree 73.73% | KL 0.3006
+  sym8   PPL   12.7938 | acc 48.01% | 288627 tokens | agree 75.82% | KL 0.2518
+
+appended 8 rows to results/quant_sym_ppl.csv
