@@ -17,6 +17,7 @@ are the most sensitive), plus FP16 for some layers. Each config reports:
 
 Usage:
     python quant_improve.py
+    python quant_improve.py --only clip_g128 --save clip_g128   # state_dict for eval_tasks.py --state-dict
 """
 import argparse
 import csv
@@ -74,6 +75,8 @@ def main():
     p.add_argument("--ctx", type=int, default=2048)
     p.add_argument("--only", nargs="*")
     p.add_argument("--csv", default="results/quant_improve.csv")
+    p.add_argument("--save", nargs="*", default=[], help="config names whose fake-quant fp16 state_dict to save (for eval_tasks.py --state-dict)")
+    p.add_argument("--save-dir", default="/root/autodl-tmp/fakequant")
     a = p.parse_args()
     now = datetime.datetime.now().isoformat(timespec="seconds")
     gpu = torch.cuda.get_device_name(0)
@@ -169,6 +172,14 @@ def main():
                          "ratios": " ".join(map(str, a.ratios)), "gpu": gpu, "torch": torch.__version__, "time": now})
         print(f"[{cname:<30}] {mb:7.1f} MB | rel MSE {mse * 1e3:6.3f}e-3 | " + " | ".join(line)
               + f" ({time.time() - t0:.0f} s)", flush=True)
+        if cname in a.save:
+            os.makedirs(a.save_dir, exist_ok=True)
+            out = dict(sd)  # checkpoint keys; replace every Linear weight with this config's choice
+            for n in linears:
+                out[f"{n}.weight"] = linears[n].weight.data.detach().cpu().clone()
+            path = os.path.join(a.save_dir, f"{cname}.pth")
+            torch.save(out, path)
+            print(f"  saved {path}", flush=True)
 
     os.makedirs(os.path.dirname(a.csv) or ".", exist_ok=True)
     new = not os.path.exists(a.csv)
