@@ -1,0 +1,29 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | copy 1377 GB/s
+   wq/wo N=  2048 K= 2048 M= 1 | fp16     25.0 v1    220.1 v2    101.2 v3     47.4 | v4 default    24.2 best    16.7 (bn=16 w=2 split=8) best split=1    21.1 (bn=16 w=8) | v4 best  133 GB/s (10% copy) | host us/call: fp16 16.0 v4 default 93.2 best 90.4 split1 61.5
+   wq/wo N=  2048 K= 2048 M= 8 | fp16     21.1 v1    186.5 v2    117.3 v3     37.2 | v4 default    22.5 best    22.0 (bn=128 w=8 split=16) best split=1    37.2 (bn=32 w=8) | v4 best  101 GB/s (7% copy) | host us/call: fp16 20.8 v4 default 93.8 best 93.0 split1 59.5
+   wq/wo N=  2048 K= 2048 M=16 | fp16     21.8 v1    133.7 v2     91.9 v3     60.4 | v4 default    26.9 best    25.7 (bn=64 w=8 split=8) best split=1    41.6 (bn=32 w=4) | v4 best   86 GB/s (6% copy) | host us/call: fp16 19.2 v4 default 93.3 best 92.7 split1 59.4
+   wk/wv N=   512 K= 2048 M= 1 | fp16     11.3 v1    183.9 v2     53.4 v3     34.3 | v4 default    15.6 best    13.0 (bn=16 w=2 split=16) best split=1    19.9 (bn=16 w=8) | v4 best   43 GB/s (3% copy) | host us/call: fp16 16.1 v4 default 95.2 best 91.7 split1 58.7
+   wk/wv N=   512 K= 2048 M= 8 | fp16     13.8 v1    126.3 v2     55.0 v3     49.0 | v4 default    19.4 best    17.1 (bn=64 w=8 split=16) best split=1    31.7 (bn=32 w=4) | v4 best   32 GB/s (2% copy) | host us/call: fp16 21.6 v4 default 100.6 best 90.4 split1 58.6
+   wk/wv N=   512 K= 2048 M=16 | fp16     13.9 v1    124.7 v2     55.5 v3     52.2 | v4 default    22.7 best    18.7 (bn=32 w=8 split=16) best split=1    37.3 (bn=32 w=4) | v4 best   30 GB/s (2% copy) | host us/call: fp16 21.3 v4 default 94.0 best 90.9 split1 59.3
+   w1/w3 N=  8192 K= 2048 M= 1 | fp16     46.2 v1    517.7 v2    354.6 v3     81.3 | v4 default    32.3 best    27.2 (bn=32 w=2 split=16) best split=1    28.6 (bn=16 w=8) | v4 best  326 GB/s (24% copy) | host us/call: fp16 16.5 v4 default 101.9 best 92.8 split1 58.8
+   w1/w3 N=  8192 K= 2048 M= 8 | fp16     46.2 v1    519.8 v2    355.2 v3     83.4 | v4 default    37.7 best    38.3 (bn=128 w=8 split=4) best split=1    44.6 (bn=64 w=8) | v4 best  232 GB/s (17% copy) | host us/call: fp16 16.4 v4 default 98.5 best 92.0 split1 58.9
+   w1/w3 N=  8192 K= 2048 M=16 | fp16     46.3 v1    519.7 v2    355.6 v3     83.7 | v4 default    46.2 best    46.6 (bn=128 w=8 split=4) best split=1    53.4 (bn=128 w=8) | v4 best  191 GB/s (14% copy) | host us/call: fp16 16.8 v4 default 93.7 best 91.7 split1 58.7
+      w2 N=  2048 K= 8192 M= 1 | fp16     53.3 v1    525.7 v2    363.1 v3     92.6 | v4 default    33.6 best    28.6 (bn=32 w=2 split=16) best split=1    71.5 (bn=16 w=8) | v4 best  311 GB/s (23% copy) | host us/call: fp16 19.3 v4 default 95.5 best 91.3 split1 59.7
+      w2 N=  2048 K= 8192 M= 8 | fp16     50.3 v1    521.7 v2    358.0 v3     85.7 | v4 default    39.7 best    39.1 (bn=64 w=4 split=16) best split=1   110.7 (bn=32 w=4) | v4 best  228 GB/s (17% copy) | host us/call: fp16 20.7 v4 default 95.2 best 91.7 split1 58.8
+      w2 N=  2048 K= 8192 M=16 | fp16     50.4 v1    523.2 v2    359.5 v3     86.6 | v4 default    45.8 best    46.2 (bn=128 w=8 split=16) best split=1   138.5 (bn=32 w=4) | v4 best  193 GB/s (14% copy) | host us/call: fp16 19.7 v4 default 94.6 best 92.2 split1 59.5
+ lm_head N=128256 K= 2048 M= 1 | fp16    391.0 v1   7540.7 v2   5332.4 v3   1604.7 | v4 default   208.5 best   197.5 (bn=16 w=2 split=1) best split=1   197.5 (bn=16 w=2) | v4 best  705 GB/s (51% copy) | host us/call: fp16 16.9 v4 default 61.3 best 60.5 split1 66.1
+ lm_head N=128256 K= 2048 M= 8 | fp16    400.9 v1   7548.2 v2   5299.8 v3   1613.0 | v4 default   236.6 best   238.4 (bn=128 w=8 split=1) best split=1   238.4 (bn=128 w=8) | v4 best  584 GB/s (42% copy) | host us/call: fp16 15.9 v4 default 61.7 best 60.1 split1 60.0
+ lm_head N=128256 K= 2048 M=16 | fp16    407.0 v1   7561.0 v2   5338.4 v3   1625.5 | v4 default   285.3 best   282.6 (bn=128 w=8 split=1) best split=1   282.6 (bn=128 w=8) | v4 best  493 GB/s (36% copy) | host us/call: fp16 16.2 v4 default 61.4 best 60.3 split1 59.9
+appended 15 rows to results/int4_gemv_sweep.csv
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[e2e bs=1] fp16         decode 15.039 ms/step | prefill 17.71 ms
+W1029 01:36:31.105000 9789 site-packages/torch/_dynamo/convert_frame.py:1016] [0/8] torch._dynamo hit config.recompile_limit (8)
+W1029 01:36:31.105000 9789 site-packages/torch/_dynamo/convert_frame.py:1016] [0/8]    function: 'dequantize_packed_v2' (/root/autodl-tmp/llama-efficient-inference/llama/quantize.py:106)
+W1029 01:36:31.105000 9789 site-packages/torch/_dynamo/convert_frame.py:1016] [0/8]    last reason: 0/7: tensor 'scale' size mismatch at index 0. expected 8192, actual 2048
+W1029 01:36:31.105000 9789 site-packages/torch/_dynamo/convert_frame.py:1016] [0/8] To log all recompilation reasons, use TORCH_LOGS="recompiles".
+W1029 01:36:31.105000 9789 site-packages/torch/_dynamo/convert_frame.py:1016] [0/8] To diagnose recompilation issues, see https://pytorch.org/docs/main/torch.compiler_troubleshooting.html.
+[e2e bs=1] v4-default   decode 26.666 ms/step | prefill 46.47 ms
+[e2e bs=1] v4-split1    decode 23.519 ms/step | prefill 45.80 ms
+[e2e bs=1] v4-any       decode 26.874 ms/step | prefill 46.72 ms
+appended 4 rows to results/int4_gemv_e2e.csv

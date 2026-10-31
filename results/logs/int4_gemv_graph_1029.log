@@ -1,0 +1,12 @@
+loaded 30 configs from results/int4_gemv_sweep.csv
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+  graph tokens == eager tokens: True
+[e2e bs=1] fp16+graph   decode 3.739 ms/step | prefill 17.90 ms
+  graph tokens == eager tokens: True
+[e2e bs=1] v4-default+graph decode 3.296 ms/step | prefill 39.12 ms
+  graph tokens == eager tokens: True
+[e2e bs=1] v4-split1+graph decode 4.339 ms/step | prefill 38.28 ms
+  graph tokens == eager tokens: True
+[e2e bs=1] v4-any+graph decode 2.924 ms/step | prefill 38.32 ms
+appended 4 rows to results/int4_gemv_e2e.csv

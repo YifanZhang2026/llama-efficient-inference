@@ -718,6 +718,89 @@ v2 之后 INT4 decode 预计是 launch-bound，CPU 发射时间约 15 ms 以上�
 
 结果：
 
+`bench.py --cuda-graph`（fb32ae4）：每个 decode 位置录一张 graph（31 张，共用一个显存池，按录制顺序回放），每张读一个固定的 token 缓冲区，算出 argmax 后写回同一个缓冲区；prefill 仍用 eager。`scripts/run_t6t7_1029.sh`，`logs/bench_graph_*_1029.log`、`results/bench_part3.csv`（mode 带 `+graph`），2026-10-29，A100。**所有配置的 graph 生成 token 与 eager 逐 token 相同**（`graph tokens == eager tokens: True`）。
+
+| decode (ms/步) | eager bs=1 / 8 / 16（T1） | **graph bs=1 / 8 / 16** | graph prefill bs=1 (ms) | graph peak bs=1 (MB) | 录制 31 张 graph (s) |
+|---|---|---|---:|---:|---:|
+| FP16 | 15.15 / 16.48 / 15.88 | **3.745** / 6.089 / 8.134 | 18.14 | 3084 | 2.9 |
+| v2 | 29.78 / 31.38 / 32.59 | 26.374 / 28.502 / 30.549 | 39.02 | 2166 | 4.1 |
+| v3 | 32.67 / 34.80 / 33.88 | 7.641 / 9.801 / 11.949 | 38.92 | 1727 | 7.1 |
+| v4（默认配置） | 26.21 / 26.68 / 27.01 | **3.310** / 6.053 / 8.677 | 38.29 | 1727 | 6.8 |
+
+v4 换用 T4 扫参得到的配置（`int4_gemv_bench.py --e2e --cuda-graph --from-csv`，`logs/int4_gemv_graph_1029.log`，bs=1）：
+
+| 配置 | eager decode (ms/步) | **graph decode (ms/步)** |
+|---|---:|---:|
+| FP16 | 15.04 | 3.739 |
+| v4 默认（自动 split-K） | 26.67 | 3.296 |
+| v4 每个形状 split=1 中最快 | **23.52** | 4.339 |
+| v4 每个形状 GPU 时间最短（any） | 26.87 | **2.924** |
+
+- **graph 下 bs=1：v4（any）2.92 ms，FP16 3.74 ms，INT4 比 FP16 快 22%**；v4 默认配置 3.30 ms（快 12%）。bs=8 两者相同（6.05 vs 6.09），bs=16 v4 更慢（8.68 vs 8.13）。
+- graph 让 FP16 decode 从 15.15 降到 3.75 ms（4.0×），v4 从 26.21 降到 3.31 ms（7.9×）。
+- eager 下 split=1 的配置最快、any 最慢；graph 下顺序反过来。
+
+**nsys（graph，bs=1，`--cuda-graph-trace=node`，decode 第 3 步起中位数，`prof/p3g_*_bs1_1029`）**
+
+| | CPU 区间 | GPU 跨度 | GPU 忙碌 | kernel / 步 | 每步 runtime API |
+|---|---:|---:|---:|---:|---|
+| FP16 | 1.51 | 3.88 | 3.82 | 684 | `cudaGraphLaunch` ×1 |
+| v4（默认） | 2.02 | 3.50 | 3.41 | 892 | `cudaGraphLaunch` ×1 |
+
+- FP16：GEMM / GEMV kernel 合计约 2.39 ms / 步（`ampere_*gemm` 0.98 + `gemvx` 0.56 + `gemv2T` 0.48 + lm_head GEMM 0.37）。
+- v4：`_int4_gemv_kernel` 113 次共 1.69 ms / 步（eager nsys 中同一 kernel 为 2.97 ms，见 Part 3 A100 实测汇总）；`vectorized_elementwise` 517 次 / 步共 0.82 ms（FP16 为 293 次 0.51 ms），多出的是 split-K 的清零和 `.half()`。
+- 按每个权重 0.53 B，v4 的 113 个 Linear 共读约 655 MB，以 1378 GB/s 计约 0.48 ms；FP16 的 Linear 权重 2.47 GB，约 1.79 ms。
+
+预测：
+
+解释：
+
+### Part 3 A100 实测（T4 调参、T7 tinygemm，2026-10-29）
+
+**T4：v4 配置扫描**（`int4_gemv_bench.py`，`logs/int4_gemv_bench_1029.log`、`results/int4_gemv_sweep.csv`；GPU 时间用 `triton.testing.do_bench`，v4 时间包含 split-K 的清零和 `.half()`；"发射开销" = 连续入队 200 次不同步的平均 CPU 时间；随机权重 × 0.02，g128）。配置写作 BLOCK_N / num_warps / split。
+
+M = 1（bs=1 decode）：
+
+| 形状 | fp16 | v1 | v2 | v3 | v4 默认 | v4 最快（配置） | v4 split=1 最快（配置） | v4 最快的有效带宽 | 发射开销 µs：fp16 / v4 默认 / 最快 / split=1 |
+|---|---:|---:|---:|---:|---:|---|---|---:|---|
+| wq/wo 2048×2048 | 25.0 | 220.1 | 101.2 | 47.4 | 24.2 | **16.7**（16/2/8） | 21.1（16/8/1） | 133 GB/s（10%） | 16.0 / 93.2 / 90.4 / 61.5 |
+| wk/wv 512×2048 | 11.3 | 183.9 | 53.4 | 34.3 | 15.6 | 13.0（16/2/16） | 19.9（16/8/1） | 43 GB/s（3%） | 16.1 / 95.2 / 91.7 / 58.7 |
+| w1/w3 8192×2048 | 46.2 | 517.7 | 354.6 | 81.3 | 32.3 | **27.2**（32/2/16） | 28.6（16/8/1） | 326 GB/s（24%） | 16.5 / 101.9 / 92.8 / 58.8 |
+| w2 2048×8192 | 53.3 | 525.7 | 363.1 | 92.6 | 33.6 | **28.6**（32/2/16） | 71.5（16/8/1） | 311 GB/s（23%） | 19.3 / 95.5 / 91.3 / 59.7 |
+| lm_head 128256×2048 | 391.0 | 7540.7 | 5332.4 | 1604.7 | 208.5 | **197.5**（16/2/1） | 197.5（16/2/1） | 705 GB/s（51%） | 16.9 / 61.3 / 60.5 / 66.1 |
+
+（单位 µs；百分比相对 1377 GB/s copy。）
+
+M = 16：fp16 / v4 默认 / v4 最快 —— wq/wo 21.8 / 26.9 / 25.7，wk/wv 13.9 / 22.7 / 18.7，w1/w3 46.3 / 46.2 / 46.6，w2 50.4 / 45.8 / 46.2，lm_head 407.0 / 285.3 / 282.6。
+
+- M=1 时 v4 最快配置比 fp16 快的形状：wq/wo 0.67×、w1/w3 0.59×、w2 0.54×、lm_head 0.51×；wk/wv 比 fp16 慢（13.0 vs 11.3 µs）。
+- 发射开销：fp16 16–21 µs / 次；v4 默认 90–102 µs（lm_head 不拆分，61 µs）；split=1 约 59–66 µs。本机（RTX 5070 Laptop）同一测量为 fp16 6–8 µs、v4 24–30 µs。
+- 端到端（eager，bs=1）：FP16 15.04、v4 默认 26.67、split=1 23.52、any 26.87 ms / 步；graph 下的结果见 I4。
+
+**T7：与 PyTorch 自带的 tinygemm 对比**（`tinygemm_bench.py`，`logs/tinygemm_1029.log`、`results/tinygemm*.csv`）
+
+把同一份量化权重转成 `torch.ops.aten._weight_int4pack_mm` 的格式：偶数下标放到高 nibble 后调 `_convert_weight_to_int4pack(.., inner_k_tiles=8)`；scales_and_zeros 为 [K/g, N, 2] bf16，zero = (8 − zp)·scale；激活和输出为 bf16。本机已验证转换正确：与"bf16 激活 + bf16 scale / zero 的 fp32 参照"的差等于输出 bf16 舍入的半个 ulp。
+
+| 形状 | M | GPU µs：fp16 / v4 默认 / tinygemm（只算 kernel） | 发射开销 µs：fp16 / v4 / tinygemm | 与 fp32 参照的最大误差：cuBLAS / v4 / tinygemm |
+|---|---:|---|---|---|
+| wq/wo | 1 | 25.2 / 25.9 / 27.4（16.7） | 16.1 / 111.3 / 41.0 | 9.5e-4 / 9.5e-4 / 9.9e-3 |
+| wk/wv | 1 | 11.1 / 17.4 / 19.1（14.2） | 15.9 / 96.1 / 42.7 | 9.5e-4 / 9.5e-4 / 1.1e-2 |
+| w1/w3 | 1 | 45.7 / 32.2 / 29.5（23.5） | 16.4 / 90.3 / 42.7 | 9.8e-4 / 9.8e-4 / 1.3e-2 |
+| w2 | 1 | 52.8 / 32.2 / 30.9（25.1） | 19.1 / 95.9 / 42.5 | 1.9e-3 / 1.9e-3 / 2.2e-2 |
+| lm_head | 1 | 390.1 / 206.5 / **153.4**（146.0） | 17.8 / 62.3 / 44.3 | 9.8e-4 / 9.8e-4 / 1.6e-2 |
+| wq/wo | 16 | 21.7 / 28.5 / 29.9 | | |
+| wk/wv | 16 | 14.0 / 23.1 / 23.3 | | |
+| w1/w3 | 16 | 46.0 / 46.2 / 50.3 | | |
+| w2 | 16 | 50.5 / 45.8 / 58.8 | | |
+| lm_head | 16 | 406.4 / 287.5 / **487.3** | | |
+
+- 端到端（eager，bs=1，decode 的 Linear 换成 tinygemm，含 `x.to(bf16)` 与 `.half()`）：FP16 14.51、v4 25.64、**tinygemm 18.00 ms / 步**。
+- tinygemm 的误差比 cuBLAS / v4 大约一个数量级（bf16）。
+
+预测：
+
+解释：
+
 ---
 
 ## 问题记录

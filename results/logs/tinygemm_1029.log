@@ -1,0 +1,23 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | inner_k_tiles 8
+   wq/wo N=  2048 K= 2048 M= 1 | GPU us: fp16    25.2 v4    25.9 tinygemm    27.4 (kernel only    16.7) | host us: fp16 16.1 v4 111.3 tinygemm 41.0 | max err vs fp32: cuBLAS 9.5e-04 v4 9.5e-04 tinygemm 9.9e-03
+   wq/wo N=  2048 K= 2048 M= 8 | GPU us: fp16    20.9 v4    24.1 tinygemm    24.9 (kernel only    19.5) | host us: fp16 20.8 v4 91.1 tinygemm 43.6 | max err vs fp32: cuBLAS 9.7e-04 v4 9.7e-04 tinygemm 1.5e-02
+   wq/wo N=  2048 K= 2048 M=16 | GPU us: fp16    21.7 v4    28.5 tinygemm    29.9 (kernel only    24.8) | host us: fp16 18.7 v4 94.4 tinygemm 41.7 | max err vs fp32: cuBLAS 9.8e-04 v4 9.8e-04 tinygemm 1.5e-02
+   wk/wv N=   512 K= 2048 M= 1 | GPU us: fp16    11.1 v4    17.4 tinygemm    19.1 (kernel only    14.2) | host us: fp16 15.9 v4 96.1 tinygemm 42.7 | max err vs fp32: cuBLAS 9.5e-04 v4 9.5e-04 tinygemm 1.1e-02
+   wk/wv N=   512 K= 2048 M= 8 | GPU us: fp16    14.4 v4    19.8 tinygemm    20.6 (kernel only    15.7) | host us: fp16 21.4 v4 91.5 tinygemm 41.8 | max err vs fp32: cuBLAS 9.8e-04 v4 9.7e-04 tinygemm 1.4e-02
+   wk/wv N=   512 K= 2048 M=16 | GPU us: fp16    14.0 v4    23.1 tinygemm    23.3 (kernel only    17.2) | host us: fp16 21.5 v4 90.6 tinygemm 42.5 | max err vs fp32: cuBLAS 9.7e-04 v4 9.7e-04 tinygemm 1.2e-02
+   w1/w3 N=  8192 K= 2048 M= 1 | GPU us: fp16    45.7 v4    32.2 tinygemm    29.5 (kernel only    23.5) | host us: fp16 16.4 v4 90.3 tinygemm 42.7 | max err vs fp32: cuBLAS 9.8e-04 v4 9.8e-04 tinygemm 1.3e-02
+   w1/w3 N=  8192 K= 2048 M= 8 | GPU us: fp16    45.8 v4    38.3 tinygemm    37.3 (kernel only    31.9) | host us: fp16 16.2 v4 91.6 tinygemm 42.7 | max err vs fp32: cuBLAS 1.0e-03 v4 1.0e-03 tinygemm 1.5e-02
+   w1/w3 N=  8192 K= 2048 M=16 | GPU us: fp16    46.0 v4    46.2 tinygemm    50.3 (kernel only    44.9) | host us: fp16 16.8 v4 91.2 tinygemm 44.6 | max err vs fp32: cuBLAS 9.8e-04 v4 9.8e-04 tinygemm 1.4e-02
+      w2 N=  2048 K= 8192 M= 1 | GPU us: fp16    52.8 v4    32.2 tinygemm    30.9 (kernel only    25.1) | host us: fp16 19.1 v4 95.9 tinygemm 42.5 | max err vs fp32: cuBLAS 1.9e-03 v4 1.9e-03 tinygemm 2.2e-02
+      w2 N=  2048 K= 8192 M= 8 | GPU us: fp16    49.6 v4    39.1 tinygemm    41.4 (kernel only    35.1) | host us: fp16 20.4 v4 97.9 tinygemm 41.8 | max err vs fp32: cuBLAS 2.0e-03 v4 2.0e-03 tinygemm 2.9e-02
+      w2 N=  2048 K= 8192 M=16 | GPU us: fp16    50.5 v4    45.8 tinygemm    58.8 (kernel only    54.2) | host us: fp16 19.5 v4 92.2 tinygemm 42.0 | max err vs fp32: cuBLAS 3.6e-03 v4 2.0e-03 tinygemm 2.8e-02
+ lm_head N=128256 K= 2048 M= 1 | GPU us: fp16   390.1 v4   206.5 tinygemm   153.4 (kernel only   146.0) | host us: fp16 17.8 v4 62.3 tinygemm 44.3 | max err vs fp32: cuBLAS 9.8e-04 v4 9.8e-04 tinygemm 1.6e-02
+ lm_head N=128256 K= 2048 M= 8 | GPU us: fp16   401.7 v4   237.9 tinygemm   290.3 (kernel only   280.4) | host us: fp16 15.9 v4 61.3 tinygemm 42.0 | max err vs fp32: cuBLAS 1.7e-03 v4 1.7e-03 tinygemm 1.8e-02
+ lm_head N=128256 K= 2048 M=16 | GPU us: fp16   406.4 v4   287.5 tinygemm   487.3 (kernel only   473.0) | host us: fp16 18.0 v4 60.1 tinygemm 42.2 | max err vs fp32: cuBLAS 1.8e-03 v4 1.8e-03 tinygemm 1.6e-02
+appended 15 rows to results/tinygemm.csv
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[e2e bs=1] fp16      decode 14.505 ms/step
+[e2e bs=1] v4        decode 25.643 ms/step
+[e2e bs=1] tinygemm  decode 18.000 ms/step
+appended 3 rows to results/tinygemm_e2e.csv

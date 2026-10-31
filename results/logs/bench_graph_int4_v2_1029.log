@@ -1,0 +1,10 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | mode=int4 impl=v2 in=256 out=32 warmup=3 iters=10
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+[int4] bs=1: captured 31 decode graphs in 4.1 s | graph tokens == eager tokens: True
+[int4] bs=1: prefill 39.02 ms | decode 26.374 ms/step (p10 26.359, p90 26.392) | e2e 856.6 ms (cold 1268.8) | peak 2166 MB (static 1137)
+[int4] bs=8: captured 31 decode graphs in 3.9 s | graph tokens == eager tokens: True
+[int4] bs=8: prefill 66.98 ms | decode 28.502 ms/step (p10 28.414, p90 28.677) | e2e 952.8 ms (cold 1034.6) | peak 2745 MB (static 1225)
+[int4] bs=16: captured 31 decode graphs in 4.0 s | graph tokens == eager tokens: True
+[int4] bs=16: prefill 114.18 ms | decode 30.549 ms/step (p10 30.403, p90 30.732) | e2e 1064.9 ms (cold 1128.6) | peak 4337 MB (static 1307)
+appended 3 rows to results/bench_part3.csv

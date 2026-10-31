@@ -1,0 +1,12 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-0a68.qdstrm'
+[1/1] [0%                          ] p3g_int4_v4_bs1_1029.nsys-repProcessing events...
+[1/1] [0%                          ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [==========49%               ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [========================99% ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [===========51%              ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [====26%                     ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [=17%                        ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [13%                         ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [10%                         ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [8%                          ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [7%                          ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [14%                         ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [==21%                       ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [=====29%                    ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [=======36%                  ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [=========43%                ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [===========50%              ] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [========================100%] p3g_int4_v4_bs1_1029.nsys-rep[1/1] [========================100%] p3g_int4_v4_bs1_1029.nsys-rep
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | mode=int4 impl=v4 in=256 out=32 warmup=3 iters=10
+[int4] bs=1: captured 31 decode graphs in 7.2 s | graph tokens == eager tokens: True
+[int4] bs=1: profiled 1 rep
+Generated:
+	/root/autodl-tmp/llama-efficient-inference/prof/p3g_int4_v4_bs1_1029.nsys-rep
