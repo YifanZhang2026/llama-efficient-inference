@@ -39,7 +39,7 @@ from llama.config import CKPT_DIR
 from llama.model import ModelArgs, Llama
 
 
-def build_model(state_dict, bs, max_seq_len, mode, group_size, impl="v1"):
+def build_model(state_dict, bs, max_seq_len, mode, group_size, impl="v1", lm_head_fp16=False, int4_pack=None):
     args = ModelArgs()
     args.max_batch_size = bs
     args.max_seq_len = max_seq_len
@@ -52,7 +52,18 @@ def build_model(state_dict, bs, max_seq_len, mode, group_size, impl="v1"):
 
     if mode == "int4":
         from llama.quantize import quantize_model, set_dequant_impl
+        lm_head = model.output
         quantize_model(model, group_size=group_size)
+        if lm_head_fp16:  # keep the original fp16 nn.Linear for lm_head (GPTQ / AWQ checkpoints do)
+            model.output = lm_head
+        if int4_pack:  # swap in converted INT4 buffers (convert_ct.py), same format as quantize_model's
+            pack = torch.load(int4_pack, map_location="cpu", weights_only=True)["int4"]
+            for name, (packed, scale, zp) in pack.items():
+                ql = model.get_submodule(name)
+                ql.packed_weight.copy_(packed)
+                ql.scale.copy_(scale)
+                ql.zero_point.copy_(zp)
+            print(f"loaded INT4 buffers of {len(pack)} Linear from {int4_pack}")
         set_dequant_impl(impl)
     elif mode.startswith("moe-"):
         from llama.moe import convert_to_moe
@@ -178,7 +189,7 @@ def kv_cache_mb(args, bs, max_seq_len):
 def bench_config(state_dict, mode, bs, a):
     max_seq_len = a.input_len + a.output_len
     torch.manual_seed(0)
-    model = build_model(state_dict, bs, max_seq_len, mode, a.group_size, a.impl)
+    model = build_model(state_dict, bs, max_seq_len, mode, a.group_size, a.impl, a.lm_head_fp16, a.int4_pack)
     torch.cuda.synchronize()
     static_mb = torch.cuda.memory_allocated() / 2**20
     tokens = torch.randint(0, model.params.vocab_size, (bs, a.input_len), device="cuda")
@@ -223,7 +234,8 @@ def bench_config(state_dict, mode, bs, a):
     e2e = [p + sum(d) for p, d in reps]
     q = statistics.quantiles(steps, n=10)
     row = {
-        "mode": (mode if mode != "int4" or a.impl == "v1" else f"int4-{a.impl}") + ("+graph" if a.cuda_graph else ""),
+        "mode": (mode if mode != "int4" or a.impl == "v1" else f"int4-{a.impl}") + ("+graph" if a.cuda_graph else "")
+                + ("+lmfp16" if a.lm_head_fp16 else "") + (f"+{os.path.basename(a.int4_pack).split('_int4')[0]}" if a.int4_pack else ""),
         "bs": bs,
         "input_len": a.input_len,
         "output_len": a.output_len,
@@ -272,6 +284,8 @@ def parse_args():
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--iters", type=int, default=10)
     p.add_argument("--nvtx", action="store_true", help="NVTX ranges during timed reps")
+    p.add_argument("--lm-head-fp16", action="store_true", help="int4: keep lm_head as the fp16 nn.Linear; CSV mode gets +lmfp16")
+    p.add_argument("--int4-pack", default=None, help="int4: load converted INT4 buffers (convert_ct.py *_int4.pt); CSV mode gets +<name>")
     p.add_argument("--cuda-graph", action="store_true",
                    help="replay decode steps from CUDA graphs (one per position); CSV mode gets +graph")
     p.add_argument("--profile", action="store_true",
