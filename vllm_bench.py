@@ -33,12 +33,14 @@ def main():
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--iters", type=int, default=10)
     p.add_argument("--gpu-mem", type=float, default=0.5)
+    p.add_argument("--tokenizer", default="/root/autodl-tmp/hf/Llama-3.2-1B",
+                   help="checkpoints saved by venv-quant (transformers 5.x) write a tokenizer class vLLM's transformers does not know")
     p.add_argument("--csv", default="results/vllm_bench.csv")
     a = p.parse_args()
     from vllm import LLM, SamplingParams
     import vllm
     name, path = a.model.split("=", 1)
-    llm = LLM(model=path, dtype="float16", max_model_len=a.input_len + a.output_len + 16,
+    llm = LLM(model=path, tokenizer=a.tokenizer, dtype="float16", max_model_len=a.input_len + a.output_len + 16,
               gpu_memory_utilization=a.gpu_mem, seed=0)
     g = torch.Generator().manual_seed(0)
     rows = []
