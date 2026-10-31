@@ -1,0 +1,10 @@
+model,path,bs,input_len,output_len,prefill_ms,e2e_ms,decode_ms,vllm,torch,gpu,time
+fp16,/root/autodl-tmp/hf/Llama-3.2-1B,1,256,32,6.306,93.805,2.823,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:15:07
+fp16,/root/autodl-tmp/hf/Llama-3.2-1B,8,256,32,11.78,107.524,3.088,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:15:09
+fp16,/root/autodl-tmp/hf/Llama-3.2-1B,16,256,32,17.82,111.382,3.018,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:15:10
+gptq,/root/autodl-tmp/llmc/gptq_w4a16_asym,1,256,32,5.351,63.799,1.885,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:20:29
+gptq,/root/autodl-tmp/llmc/gptq_w4a16_asym,8,256,32,12.537,76.521,2.064,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:20:30
+gptq,/root/autodl-tmp/llmc/gptq_w4a16_asym,16,256,32,18.108,83.679,2.115,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:20:32
+awq,/root/autodl-tmp/llmc/awq_w4a16_asym,1,256,32,5.144,63.466,1.881,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:21:04
+awq,/root/autodl-tmp/llmc/awq_w4a16_asym,8,256,32,12.298,76.38,2.067,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:21:06
+awq,/root/autodl-tmp/llmc/awq_w4a16_asym,16,256,32,15.771,83.173,2.174,0.16.0,2.9.1+cu128,NVIDIA A100-PCIE-40GB,2026-11-01T02:21:07

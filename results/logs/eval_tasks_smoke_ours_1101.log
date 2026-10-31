@@ -1,0 +1,16 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+/root/miniconda3/lib/python3.12/site-packages/requests/__init__.py:109: RequestsDependencyWarning: urllib3 (2.1.0) or chardet (6.0.0.post1)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Generating train split:   0%|          | 0/2251 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 2251/2251 [00:00<00:00, 26793.63 examples/s]
+Generating test split:   0%|          | 0/2376 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 2376/2376 [00:00<00:00, 411736.34 examples/s]
+Generating validation split:   0%|          | 0/570 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 570/570 [00:00<00:00, 200937.41 examples/s]
+  0%|          | 0/20 [00:00<?, ?it/s]100%|██████████| 20/20 [00:00<00:00, 539.95it/s]
+Tokenizing inputs:   0%|          | 0/80 [00:00<?, ?it/s]Tokenizing inputs: 100%|██████████| 80/80 [00:00<00:00, 9513.05it/s]
+
+[smoke_ours] backend=ours group=None (0.4 min)
+  arc_easy                     acc          0.6500 ± 0.1094
+  arc_easy                     acc_norm     0.5000 ± 0.1147
+saved results/lm_eval/smoke_ours_samples.json, appended 2 rows to results/lm_eval/summary.csv

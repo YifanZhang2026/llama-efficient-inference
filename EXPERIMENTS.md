@@ -251,6 +251,41 @@ wq / wk / wv / w1 / w3 的输入都是 attention_norm / ffn_norm 之后的 2048 
 
 结果：
 
+`scripts/run_batch4_1101.sh`（8b340aa），`logs/lmeval_*_1101.log`、`results/lm_eval/`（`summary.csv`、每个配置的 `*_results.json` 和逐题的 `*_samples.json`），2026-11-01，A100。lm-eval 0.4.13，零样本 7 任务，**不含 MMLU**（1B 模型接近随机水平，先没跑）；R3（g32 RTN）、R4（torchao）未跑。冒烟测试（`--limit 20 --tasks arc_easy`）ours 与 hf 的 acc / acc_norm 均为 0.65 / 0.50。E1f 的两个方案用 `--state-dict` 加载伪量化权重（`/root/autodl-tmp/fakequant/`）。
+
+| 任务（指标） | R0 HF FP16 | R1 我们的 FP16 | R2 RTN g128 | clip_g128（E1f） | clip_g32（E1f） |
+|---|---:|---:|---:|---:|---:|
+| arc_challenge（acc_norm） | 36.77 ± 1.41 | 36.86 ± 1.41 | 31.83 ± 1.36 | 34.39 ± 1.39 | 35.84 ± 1.40 |
+| arc_easy（acc_norm） | 61.83 ± 1.00 | 61.74 ± 1.00 | 55.85 ± 1.02 | 58.71 ± 1.01 | 60.44 ± 1.00 |
+| boolq（acc） | 63.76 ± 0.84 | 64.13 ± 0.84 | 48.41 ± 0.87 | 52.48 ± 0.87 | 58.62 ± 0.86 |
+| hellaswag（acc_norm） | 64.16 ± 0.48 | 64.12 ± 0.48 | 60.28 ± 0.49 | 60.44 ± 0.49 | 62.28 ± 0.48 |
+| lambada_openai（acc） | 62.91 ± 0.67 | 62.93 ± 0.67 | 55.62 ± 0.69 | 55.54 ± 0.69 | 58.47 ± 0.69 |
+| piqa（acc） | 75.14 ± 1.01 | 75.24 ± 1.01 | 71.98 ± 1.05 | 73.61 ± 1.03 | 74.16 ± 1.02 |
+| winogrande（acc） | 60.85 ± 1.37 | 60.77 ± 1.37 | 60.85 ± 1.37 | 61.17 ± 1.37 | 60.93 ± 1.37 |
+| **7 项平均** | **60.78** | **60.83** | **54.97** | **56.62** | **58.68** |
+| lambada_openai PPL | 5.418 | 5.431 | 7.810 | 7.932 | 6.846 |
+
+（% ± stderr；平均分用表中各任务的指标。）
+
+**配对比较**（`eval_tasks.py --compare REF NEW`，同一批题目上的 95% paired bootstrap 置信区间；R→W = REF 答对而 NEW 答错的题目占比，W→R 反之；`*` = 置信区间不含 0）：
+
+| Δ（百分点） | R1 − R0 | R2 − R1 | clip_g128 − R1 | clip_g32 − R1 |
+|---|---|---|---|---|
+| arc_challenge | +0.09 [−0.34, +0.51] | −5.03* [−7.17, −2.90] | −2.47* [−4.52, −0.43] | −1.02 [−2.82, +0.77] |
+| arc_easy | −0.08 [−0.42, +0.25] | −5.89* [−7.41, −4.42] | −3.03* [−4.42, −1.60] | −1.30* [−2.48, −0.13] |
+| boolq | +0.37 [−0.18, +0.92] | −15.72* [−17.89, −13.58] | −11.65* [−13.67, −9.66] | −5.50* [−7.06, −3.94] |
+| hellaswag | −0.04 [−0.16, +0.08] | −3.84* [−4.40, −3.28] | −3.68* [−4.23, −3.15] | −1.84* [−2.32, −1.35] |
+| lambada_openai | +0.02 [−0.27, +0.29] | −7.32* [−8.40, −6.27] | −7.39* [−8.42, −6.33] | −4.46* [−5.34, −3.59] |
+| piqa | +0.11 [−0.11, +0.33] | −3.26* [−4.57, −1.96] | −1.63* [−2.88, −0.44] | −1.09 [−2.23, +0.05] |
+| winogrande | −0.08 [−0.55, +0.39] | +0.08 [−2.13, +2.21] | +0.39 [−1.74, +2.53] | +0.16 [−1.89, +2.13] |
+
+翻转率（R→W / W→R，% 题目）：R1 vs R0 每个任务都 ≤ 1.44；R2 vs R1：boolq 29.27 / 13.55，lambada 11.53 / 4.21，arc_easy 9.81 / 3.91，arc_challenge 9.64 / 4.61，winogrande 7.97 / 8.05，hellaswag 6.09 / 2.25，piqa 5.88 / 2.61。clip_g32 vs R1：boolq 13.36 / 7.86，lambada 7.59 / 3.12，其余 ≤ 6.71。完整表见 `logs/lmeval_compare_*_1101.log`。
+
+- R1 与 R0：7 个任务的差都在 ±0.4 个百分点内，置信区间都含 0。
+- R2 平均 −5.86 个百分点；除 winogrande 外 6 个任务的下降都显著；boolq 下降最多（−15.72）。
+- clip_g128 平均 −4.21，clip_g32 平均 −2.15（arc_challenge、piqa 不再显著）。lambada 上 clip_g128 与 R2 相同（−7.39 vs −7.32）。
+- winogrande 的平均分几乎不变，但两个方向的翻转率都在 7–8%。
+
 ### E1f INT4 精度改进 A：混合精度与裁剪搜索（不用校准数据）
 
 `quant_improve.py`（15c7bc0 / fc264ed），`scripts/run_e1f_1029.sh`，`logs/quant_improve_1029.log`、`results/quant_improve.csv`，2026-10-29，A100。所有方案都保持 INT4 存储格式（q ∈ [0, 15]、整数 zp、FP16 scale），v4 kernel 可以直接用。
@@ -283,6 +318,31 @@ wq / wk / wv / w1 / w3 的输入都是 attention_norm / ffn_norm 之后的 2048 
 - w2 整类保留 FP16（+376 MB）与 clip_g32（+110 MB）的 ΔPPL 相近（1.104 vs 1.113）。
 - lm_head 保留 FP16 时体积反而最小（994 MB），因为与 embedding 共用一份 FP16。
 - 已保存伪量化 state_dict（供 `eval_tasks.py --state-dict`，见 E1e）：`/root/autodl-tmp/fakequant/{clip_g128, clip_g128+w2_g32, clip_g128+w2_g32+block1_fp16}.pth`；clip_g32 未保存。
+
+预测：
+
+解释：
+
+### E1f-B GPTQ / AWQ（llm-compressor，用校准数据）
+
+`quant_llmc.py` + `hf_ppl.py`（4fa73a6），`scripts/run_batch3q_1101.sh` / `run_after_batch4_1101.sh`，`logs/quant_llmc_*_1101.log`、`logs/hf_ppl_1101.log`、`results/hf_ppl.csv`，2026-11-01，A100。在独立环境 venv-quant（llm-compressor 0.15.0，torch 2.14.1+cu130，transformers 5.21.0）里，对 HF 格式的 Llama-3.2-1B 做量化。
+
+- 格式 `W4A16_ASYM`（4-bit 非对称，group 128，与我们的 RTN 同一类）。**lm_head 不量化**（llm-compressor 的默认做法；HF 模型里 lm_head 与 embedding 共用一份权重）。
+- 校准：WikiText-2 **训练集**中随机 128 段 × 2048 token（seed 0）。与 WikiText-2 测试集同领域，所以同时看 Alpaca。
+- 耗时：GPTQ 87 s；AWQ 143 s（第一次与 lm-eval 同时跑时 OOM，GPU 空闲后重跑）。保存的压缩 checkpoint 各 1000 MB。
+- 评估在 HF 模型上进行，口径同 eval_ppl.py。HF 实现带 Llama 3 的 RoPE scaling，我们的代码没有（P3），所以绝对 PPL 和 E1b 不同，只比较相对 HF FP16 的差值。WikiText-2 用 HF tokenizer 得到 289,077 token（我们的 tokenizer 是 289,082），切出的窗口数和预测 token 数（288,627）相同。
+- `rtn_g128` = 本仓库的 RTN 作用在 lm_head 以外的所有 Linear 上。HF 的 q / k 只是行顺序不同，分组沿每一行的输入维度，所以量化结果与我们的实现相同，对应 E1d 的 `no_output`（我们的模型上 WikiText ΔPPL +2.208、Alpaca +1.238）。
+
+| | Alpaca PPL（Δ） | acc | agree / KL | WikiText-2 ctx=2048 PPL（Δ） | acc | agree / KL |
+|---|---|---:|---|---|---:|---|
+| HF FP16 | 9.68 | 51.36% | – | 9.75 | 51.83% | – |
+| RTN g128（无 lm_head） | 10.93（+1.252） | 49.99% | 81.47% / 0.142 | 11.73（+1.979） | 49.18% | 79.34% / 0.187 |
+| **GPTQ** | 10.32（**+0.640**） | 50.18% | 84.80% / 0.086 | 10.40（**+0.647**） | 50.89% | 88.05% / 0.063 |
+| AWQ | 10.47（+0.788） | 50.03% | 84.42% / 0.088 | 10.89（+1.138） | 50.25% | 83.67% / 0.110 |
+
+- GPTQ 把 RTN 的 ΔPPL 从 +1.979 降到 +0.647（WikiText，同领域校准），从 +1.252 降到 +0.640（Alpaca，非校准领域）。
+- AWQ 介于两者之间：WikiText +1.138，Alpaca +0.788。
+- 对比 E1f-A（我们的模型上，含 lm_head 量化）：clip_g32 的 ΔPPL 为 WikiText +1.113 / Alpaca +0.627，体积 1237.6 MB。
 
 预测：
 
@@ -833,6 +893,30 @@ M = 16：fp16 / v4 默认 / v4 最快 —— wq/wo 21.8 / 26.9 / 25.7，wk/wv 13
 
 - 端到端（eager，bs=1，decode 的 Linear 换成 tinygemm，含 `x.to(bf16)` 与 `.half()`）：FP16 14.51、v4 25.64、**tinygemm 18.00 ms / 步**。
 - tinygemm 的误差比 cuBLAS / v4 大约一个数量级（bf16）。
+
+预测：
+
+解释：
+
+### T8 vLLM 作为参照（2026-11-01）
+
+`vllm_bench.py`（dfbd3c5），`scripts/run_vllm_1101.sh`，`logs/vllm_*_1101.log`、`results/vllm_bench.csv`，A100，GPU 空闲时运行。vLLM 0.16.0（独立环境 venv-vllm，torch 2.9.1+cu128），V1 引擎默认设置：CUDA Graph（FULL_AND_PIECEWISE）、torch.compile、prefix caching。INT4 用的是 E1f-B 的 GPTQ / AWQ checkpoint，vLLM 日志显示 `Using MarlinLinearKernel for CompressedTensorsWNA16`。
+
+工作量同 `bench.py`：输入 256 个随机 token，输出 32 个，greedy，`ignore_eos`，bs 条长度相同的请求一起提交。计时 = `llm.generate` 的墙钟时间，warmup 3 次，取 10 次中位数；decode = (生成 32 个 token 的时间 − 生成 1 个 token 的时间) / 31。与 `bench.py` 的 CUDA event 计时口径不同，vLLM 的数字包含调度开销。
+
+| decode (ms/步) | bs=1 | bs=8 | bs=16 | prefill bs=1 (ms) |
+|---|---:|---:|---:|---:|
+| 我们的 FP16，eager（T1） | 15.15 | 16.48 | 15.88 | 17.85 |
+| 我们的 FP16 + CUDA Graph（I4） | 3.745 | 6.089 | 8.134 | 18.14 |
+| 我们的 v4 + CUDA Graph（默认配置 / T4 any） | 3.310 / 2.924 | 6.053 | 8.677 | 38.29 |
+| **vLLM FP16** | **2.823** | 3.088 | 3.018 | 6.31 |
+| **vLLM GPTQ（Marlin）** | **1.885** | 2.064 | 2.115 | 5.35 |
+| vLLM AWQ（Marlin） | 1.881 | 2.067 | 2.174 | 5.14 |
+
+- vLLM 上 INT4 比 FP16 快：bs=1 1.885 vs 2.823 ms（0.67×），bs=16 2.115 vs 3.018 ms（0.70×）。
+- vLLM 的 decode 从 bs=1 到 16 只增加 7–16%；我们的 FP16 + Graph 从 3.75 增加到 8.13 ms。
+- bs=1：vLLM GPTQ 1.885 ms，我们的 v4 + Graph（any）2.924 ms。
+- prefill：vLLM 5–6 ms，我们的 eager prefill 18 ms（FP16）/ 38 ms（v4，走 v3）。
 
 预测：
 

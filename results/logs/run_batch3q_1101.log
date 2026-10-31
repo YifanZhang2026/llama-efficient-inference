@@ -1,0 +1,14 @@
+== gptq 01:48:48
+calibration: 128 x 2048 tokens from WikiText-2 train (2436214 tokens)
+oneshot done in 87 s
+2026-11-01T01:50:42.8226 | resave_config | INFO - Resaved original config with patched fields to /root/autodl-tmp/llmc/gptq_w4a16_asym/config.json
+saved /root/autodl-tmp/llmc/gptq_w4a16_asym (1000 MB on disk)
+== awq 01:50:44
+!! awq failed
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 39.49 GiB of which 15.00 MiB is free. Process 4468 has 28.49 GiB memory in use. Including non-PyTorch memory, this process has 10.98 GiB memory in use. Of the allocated memory 9.93 GiB is allocated by PyTorch, and 547.45 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+    oneshot(model=model, dataset=ds, recipe=recipe, max_seq_length=a.seqlen, num_calibration_samples=a.nsamples)
+    raise torch.OutOfMemoryError(
+torch.OutOfMemoryError: Sequential pipeline ran out of memory. Please consider choosing a smaller module for `sequential_targets`, ex. 'Linear' for dense models. For MoE models with untraceable attention, use the attention module and individual expert class instead, ex. sequential_targets=['AttentionClass', 'ExpertClass'] with sequential_targets_per_subgraph set to batch multiple experts per subgraph and reduce memory overhead. Choosing a smaller calibration dataset can also help: reduce `max_seq_length` (when unset, calibration samples are not truncated, so a few long samples can dominate memory) or `num_calibration_samples` (memory scales with sample count for modifiers that cache activations, such as AWQ).
+== hf_ppl 01:51:17
+[transformers] `run_compressed` is deprecated and will be removed in a future version. Use `dequantize=True` instead of `run_compressed=False`.
+BATCH3Q DONE 01:51:29

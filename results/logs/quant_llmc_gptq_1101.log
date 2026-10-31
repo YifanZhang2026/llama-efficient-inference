@@ -1,0 +1,460 @@
+llmcompressor 0.15.0 | torch 2.14.1+cu130 | gptq W4A16_ASYM -> /root/autodl-tmp/llmc/gptq_w4a16_asym
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:00<00:22,  6.44it/s]Loading weights:  21%|██        | 30/146 [00:00<00:00, 139.80it/s]Loading weights:  34%|███▎      | 49/146 [00:00<00:00, 152.21it/s]Loading weights:  53%|█████▎    | 77/146 [00:00<00:00, 190.48it/s]Loading weights:  70%|██████▉   | 102/146 [00:00<00:00, 204.77it/s]Loading weights:  88%|████████▊ | 129/146 [00:00<00:00, 222.02it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 189.44it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (2436214 > 131072). Running this sequence through the model will result in indexing errors
+calibration: 128 x 2048 tokens from WikiText-2 train (2436214 tokens)
+2026-11-01T01:49:13.7741 | __init__ | WARNING - Disabling tokenizer parallelism due to threading conflict between FastTokenizer and Datasets. Set TOKENIZERS_PARALLELISM=false to suppress this warning.
+2026-11-01T01:49:14.2342 | reset | INFO - Compression lifecycle reset
+2026-11-01T01:49:14.2380 | from_modifiers | INFO - Creating recipe from modifiers
+Applying quantization config:   0%|          | 0/112 [00:00<?, ?it/s]Applying quantization config: 100%|██████████| 112/112 [00:00<00:00, 3171.13it/s]
+2026-11-01T01:49:14.2802 | initialize | INFO - Compression lifecycle initialized for 1 modifiers
+2026-11-01T01:49:14.2804 | IndependentPipeline | INFO - Inferred `SequentialPipeline` for `GPTQModifier`
+W1101 01:49:14.325000 4537 torch/fx/_symbolic_trace.py:57] is_fx_tracing will return true for both fx.symbolic_trace and torch.export. Please use is_fx_tracing_symbolic_tracing() for specifically fx.symbolic_trace or torch.compiler.is_compiling() for specifically torch.export/compile.
+/root/autodl-tmp/venv-quant/lib/python3.12/site-packages/llmcompressor/pipelines/sequential/helpers.py:686: FutureWarning: Found persistent modules outside of subgraphs. This feature will be deprecated in a future release.
+  return func(*args, **kwargs)
+Preparing cache:   0%|          | 0/128 [00:00<?, ?it/s]Preparing cache:  81%|████████▏ | 104/128 [00:00<00:00, 1039.12it/s]Preparing cache: 100%|██████████| 128/128 [00:00<00:00, 1045.80it/s]
+(1/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](1/17): Calibrating:  42%|████▏     | 54/128 [00:00<00:00, 538.64it/s](1/17): Calibrating: 100%|██████████| 128/128 [00:00<00:00, 888.06it/s]
+(1/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](1/17): Propagating:  15%|█▍        | 19/128 [00:00<00:00, 182.88it/s](1/17): Propagating:  30%|██▉       | 38/128 [00:00<00:00, 174.90it/s](1/17): Propagating:  46%|████▌     | 59/128 [00:00<00:00, 187.22it/s](1/17): Propagating:  61%|██████    | 78/128 [00:00<00:00, 153.27it/s](1/17): Propagating:  74%|███████▍  | 95/128 [00:00<00:00, 144.21it/s](1/17): Propagating:  86%|████████▌ | 110/128 [00:00<00:00, 139.43it/s](1/17): Propagating:  98%|█████████▊| 125/128 [00:00<00:00, 136.49it/s](1/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 147.61it/s]
+(2/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](2/17): Calibrating:   1%|          | 1/128 [00:00<00:55,  2.29it/s](2/17): Calibrating:  13%|█▎        | 17/128 [00:00<00:02, 40.05it/s](2/17): Calibrating:  20%|██        | 26/128 [00:00<00:02, 38.58it/s](2/17): Calibrating:  26%|██▌       | 33/128 [00:00<00:02, 38.97it/s](2/17): Calibrating:  30%|███       | 39/128 [00:01<00:02, 39.24it/s](2/17): Calibrating:  34%|███▍      | 44/128 [00:01<00:02, 39.49it/s](2/17): Calibrating:  38%|███▊      | 49/128 [00:01<00:01, 39.68it/s](2/17): Calibrating:  42%|████▏     | 54/128 [00:01<00:01, 39.84it/s](2/17): Calibrating:  46%|████▌     | 59/128 [00:01<00:01, 39.95it/s](2/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 39.73it/s](2/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 39.65it/s](2/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 39.72it/s](2/17): Calibrating:  62%|██████▏   | 79/128 [00:02<00:01, 39.76it/s](2/17): Calibrating:  66%|██████▌   | 84/128 [00:02<00:01, 39.89it/s](2/17): Calibrating:  70%|██████▉   | 89/128 [00:02<00:00, 39.88it/s](2/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.94it/s](2/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:00, 39.95it/s](2/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.79it/s](2/17): Calibrating:  84%|████████▍ | 108/128 [00:02<00:00, 39.72it/s](2/17): Calibrating:  88%|████████▊ | 112/128 [00:02<00:00, 39.72it/s](2/17): Calibrating:  91%|█████████ | 116/128 [00:03<00:00, 39.70it/s](2/17): Calibrating:  95%|█████████▍| 121/128 [00:03<00:00, 39.85it/s](2/17): Calibrating:  98%|█████████▊| 125/128 [00:03<00:00, 39.80it/s](2/17): Calibrating: 100%|██████████| 128/128 [00:03<00:00, 38.20it/s]
+2026-11-01T01:49:19.3124 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.0.self_attn.q_proj', 'model.layers.0.self_attn.o_proj']
+2026-11-01T01:49:22.3536 | GPTQ | METRIC - time 3.04s
+2026-11-01T01:49:22.3538 | GPTQ | METRIC - error 2.33
+2026-11-01T01:49:22.3542 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.3543 | GPTQ | METRIC - time 3.04s
+2026-11-01T01:49:22.3543 | GPTQ | METRIC - error 2058.46
+2026-11-01T01:49:22.3545 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.3560 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.0.self_attn.k_proj', 'model.layers.0.self_attn.v_proj']
+2026-11-01T01:49:22.3933 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:49:22.3935 | GPTQ | METRIC - error 31.23
+2026-11-01T01:49:22.3938 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.3938 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:49:22.3939 | GPTQ | METRIC - error 922.95
+2026-11-01T01:49:22.3941 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.3954 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.0.mlp.gate_proj', 'model.layers.0.mlp.up_proj']
+2026-11-01T01:49:22.4512 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:49:22.4514 | GPTQ | METRIC - error 1932.87
+2026-11-01T01:49:22.4517 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.4518 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:49:22.4519 | GPTQ | METRIC - error 2466.13
+2026-11-01T01:49:22.4522 | GPTQ | METRIC - Accelerator 0 | usage: 7.81% | total memory: 42.4 Gb
+2026-11-01T01:49:22.4532 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.0.mlp.down_proj']
+2026-11-01T01:49:22.6616 | GPTQ | METRIC - time 0.21s
+2026-11-01T01:49:22.6617 | GPTQ | METRIC - error 13.69
+2026-11-01T01:49:22.6621 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(2/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](2/17): Propagating:   5%|▌         | 7/128 [00:00<00:01, 64.96it/s](2/17): Propagating:  12%|█▏        | 15/128 [00:00<00:01, 68.91it/s](2/17): Propagating:  18%|█▊        | 23/128 [00:00<00:01, 71.03it/s](2/17): Propagating:  24%|██▍       | 31/128 [00:00<00:01, 72.63it/s](2/17): Propagating:  30%|███       | 39/128 [00:00<00:01, 73.32it/s](2/17): Propagating:  37%|███▋      | 47/128 [00:00<00:01, 73.39it/s](2/17): Propagating:  43%|████▎     | 55/128 [00:00<00:00, 73.13it/s](2/17): Propagating:  49%|████▉     | 63/128 [00:00<00:00, 73.25it/s](2/17): Propagating:  55%|█████▌    | 71/128 [00:00<00:00, 73.82it/s](2/17): Propagating:  62%|██████▏   | 79/128 [00:01<00:00, 73.64it/s](2/17): Propagating:  68%|██████▊   | 87/128 [00:01<00:00, 73.98it/s](2/17): Propagating:  74%|███████▍  | 95/128 [00:01<00:00, 73.90it/s](2/17): Propagating:  80%|████████  | 103/128 [00:01<00:00, 74.28it/s](2/17): Propagating:  87%|████████▋ | 111/128 [00:01<00:00, 74.52it/s](2/17): Propagating:  93%|█████████▎| 119/128 [00:01<00:00, 74.50it/s](2/17): Propagating:  99%|█████████▉| 127/128 [00:01<00:00, 74.30it/s](2/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 73.62it/s]
+2026-11-01T01:49:24.4022 | get_module_device | WARNING - Unable to get execution device of MemorylessMinMaxObserver(), falling back to CPU
+(3/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](3/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.04it/s](3/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 59.26it/s] (3/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 51.26it/s](3/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.66it/s](3/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 45.47it/s](3/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.94it/s](3/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.99it/s](3/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 42.13it/s](3/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.50it/s](3/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 41.02it/s](3/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.68it/s](3/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 40.30it/s](3/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:00, 40.06it/s](3/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.99it/s](3/17): Calibrating:  85%|████████▌ | 109/128 [00:02<00:00, 39.93it/s](3/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.97it/s](3/17): Calibrating:  93%|█████████▎| 119/128 [00:02<00:00, 39.86it/s](3/17): Calibrating:  96%|█████████▌| 123/128 [00:02<00:00, 39.86it/s](3/17): Calibrating:  99%|█████████▉| 127/128 [00:02<00:00, 39.84it/s](3/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.57it/s]
+2026-11-01T01:49:27.6326 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.1.self_attn.q_proj', 'model.layers.1.self_attn.o_proj']
+2026-11-01T01:49:27.6597 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:27.6599 | GPTQ | METRIC - error 6.63
+2026-11-01T01:49:27.6603 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.6604 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:27.6605 | GPTQ | METRIC - error 3400.87
+2026-11-01T01:49:27.6607 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.6620 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.1.self_attn.k_proj', 'model.layers.1.self_attn.v_proj']
+2026-11-01T01:49:27.6866 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:27.6867 | GPTQ | METRIC - error 103.86
+2026-11-01T01:49:27.6870 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.6871 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:27.6871 | GPTQ | METRIC - error 1710.54
+2026-11-01T01:49:27.6874 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.6886 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.1.mlp.gate_proj', 'model.layers.1.mlp.up_proj']
+2026-11-01T01:49:27.7218 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:27.7220 | GPTQ | METRIC - error 2758.26
+2026-11-01T01:49:27.7223 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.7224 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:27.7224 | GPTQ | METRIC - error 3808.93
+2026-11-01T01:49:27.7227 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:27.7236 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.1.mlp.down_proj']
+2026-11-01T01:49:27.8865 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:27.8867 | GPTQ | METRIC - error 268.97
+2026-11-01T01:49:27.8871 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(3/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](3/17): Propagating:   7%|▋         | 9/128 [00:00<00:01, 85.37it/s](3/17): Propagating:  16%|█▌        | 20/128 [00:00<00:01, 99.25it/s](3/17): Propagating:  23%|██▎       | 30/128 [00:00<00:00, 98.81it/s](3/17): Propagating:  31%|███▏      | 40/128 [00:00<00:00, 98.23it/s](3/17): Propagating:  40%|███▉      | 51/128 [00:00<00:00, 100.33it/s](3/17): Propagating:  50%|█████     | 64/128 [00:00<00:00, 107.24it/s](3/17): Propagating:  59%|█████▉    | 76/128 [00:00<00:00, 108.88it/s](3/17): Propagating:  71%|███████   | 91/128 [00:00<00:00, 119.15it/s](3/17): Propagating:  80%|████████  | 103/128 [00:00<00:00, 117.58it/s](3/17): Propagating:  93%|█████████▎| 119/128 [00:01<00:00, 129.40it/s](3/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 113.60it/s]
+(4/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](4/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.91it/s](4/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 59.20it/s] (4/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 51.10it/s](4/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.52it/s](4/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 45.42it/s](4/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.87it/s](4/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.87it/s](4/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 42.08it/s](4/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.46it/s](4/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 41.00it/s](4/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.48it/s](4/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 40.16it/s](4/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:00, 40.05it/s](4/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.93it/s](4/17): Calibrating:  85%|████████▌ | 109/128 [00:02<00:00, 39.84it/s](4/17): Calibrating:  88%|████████▊ | 113/128 [00:02<00:00, 39.82it/s](4/17): Calibrating:  91%|█████████▏| 117/128 [00:02<00:00, 39.82it/s](4/17): Calibrating:  95%|█████████▍| 121/128 [00:02<00:00, 39.81it/s](4/17): Calibrating:  98%|█████████▊| 125/128 [00:02<00:00, 39.72it/s](4/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.46it/s]
+2026-11-01T01:49:32.2514 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.2.self_attn.q_proj', 'model.layers.2.self_attn.o_proj']
+2026-11-01T01:49:32.2801 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:32.2803 | GPTQ | METRIC - error 10.08
+2026-11-01T01:49:32.2807 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.2808 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:32.2809 | GPTQ | METRIC - error 7161.09
+2026-11-01T01:49:32.2811 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.2824 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.2.self_attn.k_proj', 'model.layers.2.self_attn.v_proj']
+2026-11-01T01:49:32.3076 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:32.3078 | GPTQ | METRIC - error 290.02
+2026-11-01T01:49:32.3120 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.3121 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:32.3122 | GPTQ | METRIC - error 3414.76
+2026-11-01T01:49:32.3124 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.3137 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.2.mlp.gate_proj', 'model.layers.2.mlp.up_proj']
+2026-11-01T01:49:32.3471 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:32.3473 | GPTQ | METRIC - error 3524.87
+2026-11-01T01:49:32.3477 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.3478 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:32.3478 | GPTQ | METRIC - error 5637.47
+2026-11-01T01:49:32.3481 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:32.3491 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.2.mlp.down_proj']
+2026-11-01T01:49:32.5137 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:32.5139 | GPTQ | METRIC - error 45.28
+2026-11-01T01:49:32.5143 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(4/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](4/17): Propagating:  10%|█         | 13/128 [00:00<00:00, 122.96it/s](4/17): Propagating:  20%|██        | 26/128 [00:00<00:00, 123.65it/s](4/17): Propagating:  32%|███▏      | 41/128 [00:00<00:00, 131.48it/s](4/17): Propagating:  45%|████▍     | 57/128 [00:00<00:00, 141.34it/s](4/17): Propagating:  57%|█████▋    | 73/128 [00:00<00:00, 146.74it/s](4/17): Propagating:  70%|██████▉   | 89/128 [00:00<00:00, 148.56it/s](4/17): Propagating:  82%|████████▏ | 105/128 [00:00<00:00, 150.97it/s](4/17): Propagating:  95%|█████████▍| 121/128 [00:00<00:00, 153.58it/s](4/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 146.86it/s]
+(5/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](5/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.86it/s](5/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 59.02it/s] (5/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 51.00it/s](5/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.48it/s](5/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 45.36it/s](5/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.83it/s](5/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.80it/s](5/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.94it/s](5/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.37it/s](5/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.93it/s](5/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.47it/s](5/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 40.05it/s](5/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:00, 39.97it/s](5/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.79it/s](5/17): Calibrating:  84%|████████▍ | 108/128 [00:02<00:00, 39.77it/s](5/17): Calibrating:  88%|████████▊ | 112/128 [00:02<00:00, 39.76it/s](5/17): Calibrating:  91%|█████████ | 116/128 [00:02<00:00, 39.66it/s](5/17): Calibrating:  94%|█████████▍| 120/128 [00:02<00:00, 39.70it/s](5/17): Calibrating:  97%|█████████▋| 124/128 [00:02<00:00, 39.65it/s](5/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 39.57it/s](5/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.37it/s]
+2026-11-01T01:49:36.6296 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.3.self_attn.q_proj', 'model.layers.3.self_attn.o_proj']
+2026-11-01T01:49:36.6565 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:36.6567 | GPTQ | METRIC - error 20.16
+2026-11-01T01:49:36.6570 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.6571 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:36.6572 | GPTQ | METRIC - error 4948.19
+2026-11-01T01:49:36.6574 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.6586 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.3.self_attn.k_proj', 'model.layers.3.self_attn.v_proj']
+2026-11-01T01:49:36.6832 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:36.6833 | GPTQ | METRIC - error 332.82
+2026-11-01T01:49:36.6836 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.6837 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:36.6837 | GPTQ | METRIC - error 2225.40
+2026-11-01T01:49:36.6840 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.6852 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.3.mlp.gate_proj', 'model.layers.3.mlp.up_proj']
+2026-11-01T01:49:36.7184 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:36.7186 | GPTQ | METRIC - error 4160.62
+2026-11-01T01:49:36.7190 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.7191 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:36.7191 | GPTQ | METRIC - error 8288.32
+2026-11-01T01:49:36.7194 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:36.7204 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.3.mlp.down_proj']
+2026-11-01T01:49:36.8827 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:36.8829 | GPTQ | METRIC - error 62.94
+2026-11-01T01:49:36.8833 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(5/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](5/17): Propagating:  12%|█▎        | 16/128 [00:00<00:00, 155.13it/s](5/17): Propagating:  25%|██▌       | 32/128 [00:00<00:00, 156.95it/s](5/17): Propagating:  38%|███▊      | 48/128 [00:00<00:00, 156.87it/s](5/17): Propagating:  51%|█████     | 65/128 [00:00<00:00, 159.52it/s](5/17): Propagating:  64%|██████▍   | 82/128 [00:00<00:00, 160.88it/s](5/17): Propagating:  77%|███████▋  | 99/128 [00:00<00:00, 161.30it/s](5/17): Propagating:  91%|█████████ | 116/128 [00:00<00:00, 161.83it/s](5/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 161.02it/s]
+(6/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](6/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 170.79it/s](6/17): Calibrating:  28%|██▊       | 36/128 [00:00<00:01, 58.18it/s] (6/17): Calibrating:  36%|███▌      | 46/128 [00:00<00:01, 50.72it/s](6/17): Calibrating:  41%|████▏     | 53/128 [00:00<00:01, 47.11it/s](6/17): Calibrating:  46%|████▌     | 59/128 [00:01<00:01, 45.12it/s](6/17): Calibrating:  51%|█████     | 65/128 [00:01<00:01, 43.62it/s](6/17): Calibrating:  55%|█████▍    | 70/128 [00:01<00:01, 42.63it/s](6/17): Calibrating:  59%|█████▊    | 75/128 [00:01<00:01, 41.89it/s](6/17): Calibrating:  62%|██████▎   | 80/128 [00:01<00:01, 41.32it/s](6/17): Calibrating:  66%|██████▋   | 85/128 [00:01<00:01, 40.90it/s](6/17): Calibrating:  70%|███████   | 90/128 [00:01<00:00, 40.33it/s](6/17): Calibrating:  74%|███████▍  | 95/128 [00:02<00:00, 39.98it/s](6/17): Calibrating:  78%|███████▊  | 100/128 [00:02<00:00, 39.83it/s](6/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.66it/s](6/17): Calibrating:  84%|████████▍ | 108/128 [00:02<00:00, 39.64it/s](6/17): Calibrating:  88%|████████▊ | 112/128 [00:02<00:00, 39.68it/s](6/17): Calibrating:  91%|█████████ | 116/128 [00:02<00:00, 39.71it/s](6/17): Calibrating:  94%|█████████▍| 120/128 [00:02<00:00, 39.75it/s](6/17): Calibrating:  97%|█████████▋| 124/128 [00:02<00:00, 39.71it/s](6/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 39.51it/s](6/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.30it/s]
+2026-11-01T01:49:40.9280 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.4.self_attn.q_proj', 'model.layers.4.self_attn.o_proj']
+2026-11-01T01:49:40.9548 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:40.9550 | GPTQ | METRIC - error 29.49
+2026-11-01T01:49:40.9554 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:40.9555 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:40.9555 | GPTQ | METRIC - error 4903.08
+2026-11-01T01:49:40.9557 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:40.9571 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.4.self_attn.k_proj', 'model.layers.4.self_attn.v_proj']
+2026-11-01T01:49:40.9824 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:40.9825 | GPTQ | METRIC - error 311.77
+2026-11-01T01:49:40.9829 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:40.9830 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:40.9830 | GPTQ | METRIC - error 2372.39
+2026-11-01T01:49:40.9833 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:40.9846 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.4.mlp.gate_proj', 'model.layers.4.mlp.up_proj']
+2026-11-01T01:49:41.0182 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:41.0184 | GPTQ | METRIC - error 4083.27
+2026-11-01T01:49:41.0187 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:41.0188 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:41.0189 | GPTQ | METRIC - error 8789.53
+2026-11-01T01:49:41.0191 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:41.0200 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.4.mlp.down_proj']
+2026-11-01T01:49:41.1824 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:41.1825 | GPTQ | METRIC - error 68.76
+2026-11-01T01:49:41.1829 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(6/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](6/17): Propagating:   9%|▉         | 12/128 [00:00<00:01, 114.44it/s](6/17): Propagating:  20%|█▉        | 25/128 [00:00<00:00, 117.09it/s](6/17): Propagating:  29%|██▉       | 37/128 [00:00<00:00, 117.43it/s](6/17): Propagating:  40%|███▉      | 51/128 [00:00<00:00, 124.77it/s](6/17): Propagating:  50%|█████     | 64/128 [00:00<00:00, 117.21it/s](6/17): Propagating:  59%|█████▉    | 76/128 [00:00<00:00, 114.90it/s](6/17): Propagating:  70%|██████▉   | 89/128 [00:00<00:00, 119.31it/s](6/17): Propagating:  80%|███████▉  | 102/128 [00:00<00:00, 120.98it/s](6/17): Propagating:  91%|█████████ | 116/128 [00:00<00:00, 125.49it/s](6/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 119.53it/s]
+(7/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](7/17): Calibrating:  12%|█▎        | 16/128 [00:00<00:00, 150.08it/s](7/17): Calibrating:  25%|██▌       | 32/128 [00:00<00:01, 63.49it/s] (7/17): Calibrating:  32%|███▏      | 41/128 [00:00<00:01, 53.30it/s](7/17): Calibrating:  38%|███▊      | 48/128 [00:00<00:01, 48.93it/s](7/17): Calibrating:  42%|████▏     | 54/128 [00:01<00:01, 45.75it/s](7/17): Calibrating:  46%|████▌     | 59/128 [00:01<00:01, 44.19it/s](7/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.03it/s](7/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.15it/s](7/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.49it/s](7/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 40.93it/s](7/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.53it/s](7/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.12it/s](7/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.67it/s](7/17): Calibrating:  77%|███████▋  | 98/128 [00:02<00:00, 39.63it/s](7/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:00, 39.60it/s](7/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 39.65it/s](7/17): Calibrating:  86%|████████▌ | 110/128 [00:02<00:00, 39.66it/s](7/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.65it/s](7/17): Calibrating:  92%|█████████▏| 118/128 [00:02<00:00, 39.62it/s](7/17): Calibrating:  95%|█████████▌| 122/128 [00:02<00:00, 39.60it/s](7/17): Calibrating:  98%|█████████▊| 126/128 [00:02<00:00, 39.53it/s](7/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.23it/s]
+2026-11-01T01:49:45.5085 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.5.self_attn.q_proj', 'model.layers.5.self_attn.o_proj']
+2026-11-01T01:49:45.5359 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:45.5361 | GPTQ | METRIC - error 30.51
+2026-11-01T01:49:45.5365 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.5366 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:45.5367 | GPTQ | METRIC - error 6138.99
+2026-11-01T01:49:45.5369 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.5382 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.5.self_attn.k_proj', 'model.layers.5.self_attn.v_proj']
+2026-11-01T01:49:45.5632 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:45.5634 | GPTQ | METRIC - error 277.26
+2026-11-01T01:49:45.5638 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.5639 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:45.5639 | GPTQ | METRIC - error 3154.69
+2026-11-01T01:49:45.5642 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.5655 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.5.mlp.gate_proj', 'model.layers.5.mlp.up_proj']
+2026-11-01T01:49:45.5988 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:45.5990 | GPTQ | METRIC - error 4296.98
+2026-11-01T01:49:45.5993 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.5994 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:45.5995 | GPTQ | METRIC - error 7947.05
+2026-11-01T01:49:45.5997 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:45.6006 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.5.mlp.down_proj']
+2026-11-01T01:49:45.7638 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:45.7641 | GPTQ | METRIC - error 79.72
+2026-11-01T01:49:45.7645 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(7/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](7/17): Propagating:  11%|█         | 14/128 [00:00<00:00, 138.36it/s](7/17): Propagating:  24%|██▍       | 31/128 [00:00<00:00, 151.59it/s](7/17): Propagating:  38%|███▊      | 48/128 [00:00<00:00, 155.88it/s](7/17): Propagating:  50%|█████     | 64/128 [00:00<00:00, 156.12it/s](7/17): Propagating:  62%|██████▎   | 80/128 [00:00<00:00, 142.98it/s](7/17): Propagating:  75%|███████▌  | 96/128 [00:00<00:00, 146.97it/s](7/17): Propagating:  88%|████████▊ | 113/128 [00:00<00:00, 151.53it/s](7/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 152.04it/s]
+(8/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](8/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 168.69it/s](8/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.66it/s] (8/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.71it/s](8/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.26it/s](8/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 45.12it/s](8/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.60it/s](8/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.61it/s](8/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.82it/s](8/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.21it/s](8/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.70it/s](8/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.28it/s](8/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.89it/s](8/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:00, 39.79it/s](8/17): Calibrating:  80%|████████  | 103/128 [00:02<00:00, 39.74it/s](8/17): Calibrating:  84%|████████▎ | 107/128 [00:02<00:00, 39.61it/s](8/17): Calibrating:  87%|████████▋ | 111/128 [00:02<00:00, 39.53it/s](8/17): Calibrating:  90%|████████▉ | 115/128 [00:02<00:00, 39.57it/s](8/17): Calibrating:  93%|█████████▎| 119/128 [00:02<00:00, 39.58it/s](8/17): Calibrating:  96%|█████████▌| 123/128 [00:02<00:00, 39.48it/s](8/17): Calibrating:  99%|█████████▉| 127/128 [00:02<00:00, 39.37it/s](8/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.17it/s]
+2026-11-01T01:49:49.8646 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.6.self_attn.q_proj', 'model.layers.6.self_attn.o_proj']
+2026-11-01T01:49:49.8918 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.8920 | GPTQ | METRIC - error 45.94
+2026-11-01T01:49:49.8923 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.8924 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.8925 | GPTQ | METRIC - error 4620.83
+2026-11-01T01:49:49.8927 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.8939 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.6.self_attn.k_proj', 'model.layers.6.self_attn.v_proj']
+2026-11-01T01:49:49.9205 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.9207 | GPTQ | METRIC - error 349.16
+2026-11-01T01:49:49.9211 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.9212 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.9212 | GPTQ | METRIC - error 2849.34
+2026-11-01T01:49:49.9215 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.9230 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.6.mlp.gate_proj', 'model.layers.6.mlp.up_proj']
+2026-11-01T01:49:49.9565 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.9567 | GPTQ | METRIC - error 4364.90
+2026-11-01T01:49:49.9570 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.9571 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:49.9572 | GPTQ | METRIC - error 7913.63
+2026-11-01T01:49:49.9574 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:49.9583 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.6.mlp.down_proj']
+2026-11-01T01:49:50.1245 | GPTQ | METRIC - time 0.17s
+2026-11-01T01:49:50.1247 | GPTQ | METRIC - error 79.42
+2026-11-01T01:49:50.1251 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(8/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](8/17): Propagating:  12%|█▏        | 15/128 [00:00<00:00, 146.71it/s](8/17): Propagating:  24%|██▍       | 31/128 [00:00<00:00, 149.44it/s](8/17): Propagating:  37%|███▋      | 47/128 [00:00<00:00, 152.42it/s](8/17): Propagating:  49%|████▉     | 63/128 [00:00<00:00, 152.79it/s](8/17): Propagating:  62%|██████▏   | 79/128 [00:00<00:00, 154.38it/s](8/17): Propagating:  74%|███████▍  | 95/128 [00:00<00:00, 154.82it/s](8/17): Propagating:  87%|████████▋ | 111/128 [00:00<00:00, 155.90it/s](8/17): Propagating:  99%|█████████▉| 127/128 [00:00<00:00, 156.79it/s](8/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 155.01it/s]
+(9/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](9/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 170.20it/s](9/17): Calibrating:  28%|██▊       | 36/128 [00:00<00:01, 57.77it/s] (9/17): Calibrating:  36%|███▌      | 46/128 [00:00<00:01, 50.42it/s](9/17): Calibrating:  41%|████▏     | 53/128 [00:00<00:01, 47.01it/s](9/17): Calibrating:  46%|████▌     | 59/128 [00:01<00:01, 45.04it/s](9/17): Calibrating:  51%|█████     | 65/128 [00:01<00:01, 43.49it/s](9/17): Calibrating:  55%|█████▍    | 70/128 [00:01<00:01, 42.55it/s](9/17): Calibrating:  59%|█████▊    | 75/128 [00:01<00:01, 41.70it/s](9/17): Calibrating:  62%|██████▎   | 80/128 [00:01<00:01, 41.12it/s](9/17): Calibrating:  66%|██████▋   | 85/128 [00:01<00:01, 40.67it/s](9/17): Calibrating:  70%|███████   | 90/128 [00:01<00:00, 40.14it/s](9/17): Calibrating:  74%|███████▍  | 95/128 [00:02<00:00, 39.88it/s](9/17): Calibrating:  78%|███████▊  | 100/128 [00:02<00:00, 39.80it/s](9/17): Calibrating:  81%|████████▏ | 104/128 [00:02<00:00, 39.68it/s](9/17): Calibrating:  84%|████████▍ | 108/128 [00:02<00:00, 39.68it/s](9/17): Calibrating:  88%|████████▊ | 112/128 [00:02<00:00, 39.54it/s](9/17): Calibrating:  91%|█████████ | 116/128 [00:02<00:00, 39.44it/s](9/17): Calibrating:  94%|█████████▍| 120/128 [00:02<00:00, 39.44it/s](9/17): Calibrating:  97%|█████████▋| 124/128 [00:02<00:00, 39.37it/s](9/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 39.20it/s](9/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.11it/s]
+2026-11-01T01:49:54.2127 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.7.self_attn.q_proj', 'model.layers.7.self_attn.o_proj']
+2026-11-01T01:49:54.2406 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:54.2408 | GPTQ | METRIC - error 44.25
+2026-11-01T01:49:54.2412 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.2413 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:54.2414 | GPTQ | METRIC - error 5410.96
+2026-11-01T01:49:54.2416 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.2430 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.7.self_attn.k_proj', 'model.layers.7.self_attn.v_proj']
+2026-11-01T01:49:54.2682 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:49:54.2683 | GPTQ | METRIC - error 386.35
+2026-11-01T01:49:54.2687 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.2688 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:54.2688 | GPTQ | METRIC - error 2833.35
+2026-11-01T01:49:54.2691 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.2703 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.7.mlp.gate_proj', 'model.layers.7.mlp.up_proj']
+2026-11-01T01:49:54.3037 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:54.3040 | GPTQ | METRIC - error 4538.17
+2026-11-01T01:49:54.3044 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.3045 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:54.3045 | GPTQ | METRIC - error 7455.65
+2026-11-01T01:49:54.3048 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:54.3058 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.7.mlp.down_proj']
+2026-11-01T01:49:54.4708 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:49:54.4710 | GPTQ | METRIC - error 88.74
+2026-11-01T01:49:54.4714 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(9/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](9/17): Propagating:  12%|█▎        | 16/128 [00:00<00:00, 151.72it/s](9/17): Propagating:  25%|██▌       | 32/128 [00:00<00:00, 155.11it/s](9/17): Propagating:  38%|███▊      | 48/128 [00:00<00:00, 151.28it/s](9/17): Propagating:  50%|█████     | 64/128 [00:00<00:00, 154.24it/s](9/17): Propagating:  62%|██████▎   | 80/128 [00:00<00:00, 155.34it/s](9/17): Propagating:  75%|███████▌  | 96/128 [00:00<00:00, 152.87it/s](9/17): Propagating:  88%|████████▊ | 112/128 [00:00<00:00, 146.72it/s](9/17): Propagating:  99%|█████████▉| 127/128 [00:00<00:00, 146.49it/s](9/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 150.29it/s]
+(10/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](10/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.32it/s](10/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.67it/s] (10/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.68it/s](10/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.09it/s](10/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 45.05it/s](10/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.47it/s](10/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.48it/s](10/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.66it/s](10/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.10it/s](10/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.67it/s](10/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.22it/s](10/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.81it/s](10/17): Calibrating:  77%|███████▋  | 98/128 [00:02<00:00, 39.73it/s](10/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:00, 39.60it/s](10/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 39.59it/s](10/17): Calibrating:  86%|████████▌ | 110/128 [00:02<00:00, 39.58it/s](10/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.52it/s](10/17): Calibrating:  92%|█████████▏| 118/128 [00:02<00:00, 39.44it/s](10/17): Calibrating:  95%|█████████▌| 122/128 [00:02<00:00, 39.40it/s](10/17): Calibrating:  98%|█████████▊| 126/128 [00:02<00:00, 39.41it/s](10/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.10it/s]
+2026-11-01T01:49:58.5871 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.8.self_attn.q_proj', 'model.layers.8.self_attn.o_proj']
+2026-11-01T01:49:58.6161 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6164 | GPTQ | METRIC - error 68.31
+2026-11-01T01:49:58.6168 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6169 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6170 | GPTQ | METRIC - error 6008.81
+2026-11-01T01:49:58.6172 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6187 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.8.self_attn.k_proj', 'model.layers.8.self_attn.v_proj']
+2026-11-01T01:49:58.6448 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6450 | GPTQ | METRIC - error 366.81
+2026-11-01T01:49:58.6453 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6454 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6455 | GPTQ | METRIC - error 3546.12
+2026-11-01T01:49:58.6457 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6469 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.8.mlp.gate_proj', 'model.layers.8.mlp.up_proj']
+2026-11-01T01:49:58.6812 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6814 | GPTQ | METRIC - error 5205.17
+2026-11-01T01:49:58.6817 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6818 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:49:58.6819 | GPTQ | METRIC - error 8392.63
+2026-11-01T01:49:58.6821 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:49:58.6830 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.8.mlp.down_proj']
+2026-11-01T01:49:58.8494 | GPTQ | METRIC - time 0.17s
+2026-11-01T01:49:58.8496 | GPTQ | METRIC - error 118.10
+2026-11-01T01:49:58.8500 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(10/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](10/17): Propagating:   9%|▊         | 11/128 [00:00<00:01, 106.00it/s](10/17): Propagating:  17%|█▋        | 22/128 [00:00<00:00, 107.22it/s](10/17): Propagating:  27%|██▋       | 34/128 [00:00<00:00, 109.81it/s](10/17): Propagating:  38%|███▊      | 48/128 [00:00<00:00, 117.61it/s](10/17): Propagating:  48%|████▊     | 62/128 [00:00<00:00, 125.14it/s](10/17): Propagating:  59%|█████▉    | 76/128 [00:00<00:00, 129.26it/s](10/17): Propagating:  70%|███████   | 90/128 [00:00<00:00, 130.35it/s](10/17): Propagating:  81%|████████▏ | 104/128 [00:00<00:00, 132.41it/s](10/17): Propagating:  94%|█████████▍| 120/128 [00:00<00:00, 139.81it/s](10/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 128.93it/s]
+(11/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](11/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.49it/s](11/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.55it/s] (11/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.63it/s](11/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.09it/s](11/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 44.93it/s](11/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.44it/s](11/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.44it/s](11/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.60it/s](11/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 40.97it/s](11/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.53it/s](11/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.15it/s](11/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.82it/s](11/17): Calibrating:  77%|███████▋  | 98/128 [00:02<00:00, 39.72it/s](11/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:00, 39.59it/s](11/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 39.56it/s](11/17): Calibrating:  86%|████████▌ | 110/128 [00:02<00:00, 39.46it/s](11/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.41it/s](11/17): Calibrating:  92%|█████████▏| 118/128 [00:02<00:00, 39.25it/s](11/17): Calibrating:  95%|█████████▌| 122/128 [00:02<00:00, 39.27it/s](11/17): Calibrating:  98%|█████████▊| 126/128 [00:02<00:00, 39.34it/s](11/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.02it/s]
+2026-11-01T01:50:03.1112 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.9.self_attn.q_proj', 'model.layers.9.self_attn.o_proj']
+2026-11-01T01:50:03.1384 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.1386 | GPTQ | METRIC - error 77.99
+2026-11-01T01:50:03.1391 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.1391 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.1392 | GPTQ | METRIC - error 6885.72
+2026-11-01T01:50:03.1394 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.1407 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.9.self_attn.k_proj', 'model.layers.9.self_attn.v_proj']
+2026-11-01T01:50:03.1663 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.1664 | GPTQ | METRIC - error 433.01
+2026-11-01T01:50:03.1668 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.1669 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.1670 | GPTQ | METRIC - error 2732.39
+2026-11-01T01:50:03.1672 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.1686 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.9.mlp.gate_proj', 'model.layers.9.mlp.up_proj']
+2026-11-01T01:50:03.2020 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.2022 | GPTQ | METRIC - error 5408.15
+2026-11-01T01:50:03.2026 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.2027 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:03.2027 | GPTQ | METRIC - error 8917.39
+2026-11-01T01:50:03.2030 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:03.2039 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.9.mlp.down_proj']
+2026-11-01T01:50:03.3694 | GPTQ | METRIC - time 0.17s
+2026-11-01T01:50:03.3696 | GPTQ | METRIC - error 143.29
+2026-11-01T01:50:03.3701 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(11/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](11/17): Propagating:  11%|█         | 14/128 [00:00<00:00, 139.60it/s](11/17): Propagating:  22%|██▏       | 28/128 [00:00<00:00, 134.99it/s](11/17): Propagating:  34%|███▎      | 43/128 [00:00<00:00, 140.25it/s](11/17): Propagating:  45%|████▌     | 58/128 [00:00<00:00, 139.76it/s](11/17): Propagating:  56%|█████▋    | 72/128 [00:00<00:00, 136.60it/s](11/17): Propagating:  67%|██████▋   | 86/128 [00:00<00:00, 136.60it/s](11/17): Propagating:  80%|████████  | 103/128 [00:00<00:00, 144.96it/s](11/17): Propagating:  94%|█████████▍| 120/128 [00:00<00:00, 149.91it/s](11/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 144.38it/s]
+(12/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](12/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 169.03it/s](12/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.66it/s] (12/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.70it/s](12/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 47.04it/s](12/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 44.88it/s](12/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.36it/s](12/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.44it/s](12/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.70it/s](12/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 41.12it/s](12/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.69it/s](12/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 40.15it/s](12/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.72it/s](12/17): Calibrating:  77%|███████▋  | 98/128 [00:02<00:00, 39.51it/s](12/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:00, 39.47it/s](12/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 39.51it/s](12/17): Calibrating:  86%|████████▌ | 110/128 [00:02<00:00, 39.48it/s](12/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.44it/s](12/17): Calibrating:  92%|█████████▏| 118/128 [00:02<00:00, 39.37it/s](12/17): Calibrating:  95%|█████████▌| 122/128 [00:02<00:00, 39.33it/s](12/17): Calibrating:  98%|█████████▊| 126/128 [00:02<00:00, 39.30it/s](12/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 44.03it/s]
+2026-11-01T01:50:07.5268 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.10.self_attn.q_proj', 'model.layers.10.self_attn.o_proj']
+2026-11-01T01:50:07.5546 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:07.5548 | GPTQ | METRIC - error 54.90
+2026-11-01T01:50:07.5552 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.5553 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:07.5553 | GPTQ | METRIC - error 7406.41
+2026-11-01T01:50:07.5556 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.5569 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.10.self_attn.k_proj', 'model.layers.10.self_attn.v_proj']
+2026-11-01T01:50:07.5821 | GPTQ | METRIC - time 0.02s
+2026-11-01T01:50:07.5823 | GPTQ | METRIC - error 527.24
+2026-11-01T01:50:07.5827 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.5828 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:07.5828 | GPTQ | METRIC - error 3181.81
+2026-11-01T01:50:07.5831 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.5844 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.10.mlp.gate_proj', 'model.layers.10.mlp.up_proj']
+2026-11-01T01:50:07.6178 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:07.6180 | GPTQ | METRIC - error 6315.65
+2026-11-01T01:50:07.6183 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.6184 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:07.6185 | GPTQ | METRIC - error 10011.10
+2026-11-01T01:50:07.6187 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:07.6196 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.10.mlp.down_proj']
+2026-11-01T01:50:07.7833 | GPTQ | METRIC - time 0.16s
+2026-11-01T01:50:07.7835 | GPTQ | METRIC - error 176.80
+2026-11-01T01:50:07.7840 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(12/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](12/17): Propagating:  12%|█▎        | 16/128 [00:00<00:00, 152.06it/s](12/17): Propagating:  26%|██▌       | 33/128 [00:00<00:00, 158.19it/s](12/17): Propagating:  39%|███▉      | 50/128 [00:00<00:00, 159.61it/s](12/17): Propagating:  52%|█████▏    | 67/128 [00:00<00:00, 160.60it/s](12/17): Propagating:  66%|██████▌   | 84/128 [00:00<00:00, 160.58it/s](12/17): Propagating:  79%|███████▉  | 101/128 [00:00<00:00, 160.64it/s](12/17): Propagating:  92%|█████████▏| 118/128 [00:00<00:00, 161.51it/s](12/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 161.10it/s]
+(13/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](13/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 168.38it/s](13/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.27it/s] (13/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.42it/s](13/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 46.95it/s](13/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 44.91it/s](13/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.36it/s](13/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.37it/s](13/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.57it/s](13/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 40.98it/s](13/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 40.42it/s](13/17): Calibrating:  70%|██████▉   | 89/128 [00:01<00:00, 39.96it/s](13/17): Calibrating:  73%|███████▎  | 94/128 [00:02<00:00, 39.77it/s](13/17): Calibrating:  77%|███████▋  | 98/128 [00:02<00:00, 39.61it/s](13/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:00, 39.50it/s](13/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 39.44it/s](13/17): Calibrating:  86%|████████▌ | 110/128 [00:02<00:00, 39.43it/s](13/17): Calibrating:  89%|████████▉ | 114/128 [00:02<00:00, 39.30it/s](13/17): Calibrating:  92%|█████████▏| 118/128 [00:02<00:00, 39.29it/s](13/17): Calibrating:  95%|█████████▌| 122/128 [00:02<00:00, 39.19it/s](13/17): Calibrating:  98%|█████████▊| 126/128 [00:02<00:00, 39.12it/s](13/17): Calibrating: 100%|██████████| 128/128 [00:02<00:00, 43.92it/s]
+2026-11-01T01:50:11.8549 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.11.self_attn.q_proj', 'model.layers.11.self_attn.o_proj']
+2026-11-01T01:50:11.8824 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.8826 | GPTQ | METRIC - error 42.90
+2026-11-01T01:50:11.8830 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.8831 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.8831 | GPTQ | METRIC - error 7086.49
+2026-11-01T01:50:11.8834 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.8847 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.11.self_attn.k_proj', 'model.layers.11.self_attn.v_proj']
+2026-11-01T01:50:11.9109 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.9111 | GPTQ | METRIC - error 484.66
+2026-11-01T01:50:11.9115 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.9116 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.9117 | GPTQ | METRIC - error 3619.88
+2026-11-01T01:50:11.9120 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.9135 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.11.mlp.gate_proj', 'model.layers.11.mlp.up_proj']
+2026-11-01T01:50:11.9472 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.9474 | GPTQ | METRIC - error 6916.13
+2026-11-01T01:50:11.9477 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.9478 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:11.9479 | GPTQ | METRIC - error 10768.33
+2026-11-01T01:50:11.9481 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:11.9491 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.11.mlp.down_proj']
+2026-11-01T01:50:12.1146 | GPTQ | METRIC - time 0.17s
+2026-11-01T01:50:12.1148 | GPTQ | METRIC - error 207.91
+2026-11-01T01:50:12.1153 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(13/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](13/17): Propagating:  12%|█▏        | 15/128 [00:00<00:00, 147.43it/s](13/17): Propagating:  24%|██▍       | 31/128 [00:00<00:00, 153.63it/s](13/17): Propagating:  37%|███▋      | 47/128 [00:00<00:00, 150.01it/s](13/17): Propagating:  49%|████▉     | 63/128 [00:00<00:00, 148.72it/s](13/17): Propagating:  62%|██████▏   | 79/128 [00:00<00:00, 151.10it/s](13/17): Propagating:  74%|███████▍  | 95/128 [00:00<00:00, 152.96it/s](13/17): Propagating:  87%|████████▋ | 111/128 [00:00<00:00, 154.54it/s](13/17): Propagating:  99%|█████████▉| 127/128 [00:00<00:00, 155.89it/s](13/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 153.66it/s]
+(14/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](14/17): Calibrating:  14%|█▍        | 18/128 [00:00<00:00, 168.45it/s](14/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:01, 58.36it/s] (14/17): Calibrating:  35%|███▌      | 45/128 [00:00<00:01, 50.39it/s](14/17): Calibrating:  41%|████      | 52/128 [00:00<00:01, 46.90it/s](14/17): Calibrating:  45%|████▌     | 58/128 [00:01<00:01, 44.89it/s](14/17): Calibrating:  50%|█████     | 64/128 [00:01<00:01, 43.34it/s](14/17): Calibrating:  54%|█████▍    | 69/128 [00:01<00:01, 42.33it/s](14/17): Calibrating:  58%|█████▊    | 74/128 [00:01<00:01, 41.53it/s](14/17): Calibrating:  62%|██████▏   | 79/128 [00:01<00:01, 40.42it/s](14/17): Calibrating:  66%|██████▌   | 84/128 [00:01<00:01, 39.35it/s](14/17): Calibrating:  69%|██████▉   | 88/128 [00:01<00:01, 39.08it/s](14/17): Calibrating:  72%|███████▏  | 92/128 [00:02<00:01, 32.05it/s](14/17): Calibrating:  75%|███████▌  | 96/128 [00:02<00:01, 26.21it/s](14/17): Calibrating:  77%|███████▋  | 99/128 [00:02<00:01, 23.56it/s](14/17): Calibrating:  80%|███████▉  | 102/128 [00:02<00:01, 22.98it/s](14/17): Calibrating:  83%|████████▎ | 106/128 [00:02<00:00, 24.54it/s](14/17): Calibrating:  85%|████████▌ | 109/128 [00:02<00:00, 22.03it/s](14/17): Calibrating:  88%|████████▊ | 112/128 [00:03<00:00, 20.43it/s](14/17): Calibrating:  90%|████████▉ | 115/128 [00:03<00:00, 20.69it/s](14/17): Calibrating:  92%|█████████▏| 118/128 [00:03<00:00, 22.54it/s](14/17): Calibrating:  95%|█████████▍| 121/128 [00:03<00:00, 20.73it/s](14/17): Calibrating:  97%|█████████▋| 124/128 [00:03<00:00, 19.44it/s](14/17): Calibrating:  99%|█████████▉| 127/128 [00:03<00:00, 19.81it/s](14/17): Calibrating: 100%|██████████| 128/128 [00:03<00:00, 32.77it/s]
+2026-11-01T01:50:17.4985 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.12.self_attn.q_proj', 'model.layers.12.self_attn.o_proj']
+2026-11-01T01:50:17.5276 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:17.5278 | GPTQ | METRIC - error 44.38
+2026-11-01T01:50:17.5282 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.5283 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:17.5284 | GPTQ | METRIC - error 6781.99
+2026-11-01T01:50:17.5286 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.5334 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.12.self_attn.k_proj', 'model.layers.12.self_attn.v_proj']
+2026-11-01T01:50:17.5831 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:17.5832 | GPTQ | METRIC - error 507.77
+2026-11-01T01:50:17.5836 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.5837 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:17.5837 | GPTQ | METRIC - error 3274.00
+2026-11-01T01:50:17.5840 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.5882 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.12.mlp.gate_proj', 'model.layers.12.mlp.up_proj']
+2026-11-01T01:50:17.6667 | GPTQ | METRIC - time 0.08s
+2026-11-01T01:50:17.6670 | GPTQ | METRIC - error 7401.79
+2026-11-01T01:50:17.6674 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.6675 | GPTQ | METRIC - time 0.08s
+2026-11-01T01:50:17.6675 | GPTQ | METRIC - error 11008.11
+2026-11-01T01:50:17.6677 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:17.6696 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.12.mlp.down_proj']
+2026-11-01T01:50:17.9907 | GPTQ | METRIC - time 0.32s
+2026-11-01T01:50:17.9909 | GPTQ | METRIC - error 263.04
+2026-11-01T01:50:17.9913 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(14/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](14/17): Propagating:  11%|█         | 14/128 [00:00<00:00, 133.25it/s](14/17): Propagating:  22%|██▏       | 28/128 [00:00<00:00, 126.56it/s](14/17): Propagating:  32%|███▏      | 41/128 [00:00<00:00, 114.52it/s](14/17): Propagating:  41%|████▏     | 53/128 [00:00<00:00, 110.39it/s](14/17): Propagating:  51%|█████     | 65/128 [00:00<00:00, 111.60it/s](14/17): Propagating:  60%|██████    | 77/128 [00:00<00:00, 111.58it/s](14/17): Propagating:  71%|███████   | 91/128 [00:00<00:00, 117.73it/s](14/17): Propagating:  80%|████████  | 103/128 [00:00<00:00, 117.99it/s](14/17): Propagating:  91%|█████████ | 116/128 [00:00<00:00, 120.21it/s](14/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 119.25it/s]
+(15/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](15/17): Calibrating:  12%|█▎        | 16/128 [00:00<00:00, 119.72it/s](15/17): Calibrating:  22%|██▏       | 28/128 [00:00<00:02, 41.38it/s] (15/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:02, 32.25it/s](15/17): Calibrating:  31%|███▏      | 40/128 [00:01<00:02, 32.34it/s](15/17): Calibrating:  34%|███▍      | 44/128 [00:01<00:03, 27.83it/s](15/17): Calibrating:  38%|███▊      | 48/128 [00:01<00:03, 24.66it/s](15/17): Calibrating:  41%|████      | 52/128 [00:01<00:02, 26.22it/s](15/17): Calibrating:  44%|████▍     | 56/128 [00:01<00:02, 27.76it/s](15/17): Calibrating:  47%|████▋     | 60/128 [00:01<00:02, 23.97it/s](15/17): Calibrating:  49%|████▉     | 63/128 [00:02<00:02, 21.91it/s](15/17): Calibrating:  52%|█████▏    | 67/128 [00:02<00:02, 24.18it/s](15/17): Calibrating:  55%|█████▌    | 71/128 [00:02<00:02, 26.24it/s](15/17): Calibrating:  58%|█████▊    | 74/128 [00:02<00:02, 24.39it/s](15/17): Calibrating:  60%|██████    | 77/128 [00:02<00:02, 21.89it/s](15/17): Calibrating:  62%|██████▎   | 80/128 [00:02<00:02, 21.60it/s](15/17): Calibrating:  66%|██████▌   | 84/128 [00:03<00:01, 24.37it/s](15/17): Calibrating:  69%|██████▉   | 88/128 [00:03<00:01, 26.37it/s](15/17): Calibrating:  71%|███████   | 91/128 [00:03<00:01, 23.02it/s](15/17): Calibrating:  73%|███████▎  | 94/128 [00:03<00:01, 20.96it/s](15/17): Calibrating:  76%|███████▌  | 97/128 [00:03<00:01, 22.26it/s](15/17): Calibrating:  79%|███████▉  | 101/128 [00:03<00:01, 25.01it/s](15/17): Calibrating:  82%|████████▏ | 105/128 [00:03<00:00, 25.76it/s](15/17): Calibrating:  84%|████████▍ | 108/128 [00:04<00:00, 22.82it/s](15/17): Calibrating:  87%|████████▋ | 111/128 [00:04<00:00, 20.92it/s](15/17): Calibrating:  90%|████████▉ | 115/128 [00:04<00:00, 23.77it/s](15/17): Calibrating:  93%|█████████▎| 119/128 [00:04<00:00, 26.13it/s](15/17): Calibrating:  95%|█████████▌| 122/128 [00:04<00:00, 25.00it/s](15/17): Calibrating:  98%|█████████▊| 125/128 [00:04<00:00, 22.11it/s](15/17): Calibrating: 100%|██████████| 128/128 [00:04<00:00, 21.10it/s](15/17): Calibrating: 100%|██████████| 128/128 [00:04<00:00, 25.89it/s]
+2026-11-01T01:50:24.5756 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.13.self_attn.q_proj', 'model.layers.13.self_attn.o_proj']
+2026-11-01T01:50:24.6362 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:24.6363 | GPTQ | METRIC - error 55.93
+2026-11-01T01:50:24.6367 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.6368 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:24.6369 | GPTQ | METRIC - error 8097.41
+2026-11-01T01:50:24.6371 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.6413 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.13.self_attn.k_proj', 'model.layers.13.self_attn.v_proj']
+2026-11-01T01:50:24.6858 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:50:24.6860 | GPTQ | METRIC - error 915.50
+2026-11-01T01:50:24.6863 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.6864 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:50:24.6864 | GPTQ | METRIC - error 3479.05
+2026-11-01T01:50:24.6867 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.6886 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.13.mlp.gate_proj', 'model.layers.13.mlp.up_proj']
+2026-11-01T01:50:24.7293 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:50:24.7295 | GPTQ | METRIC - error 8786.03
+2026-11-01T01:50:24.7299 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.7300 | GPTQ | METRIC - time 0.04s
+2026-11-01T01:50:24.7300 | GPTQ | METRIC - error 12021.21
+2026-11-01T01:50:24.7303 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:24.7314 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.13.mlp.down_proj']
+2026-11-01T01:50:24.9861 | GPTQ | METRIC - time 0.25s
+2026-11-01T01:50:24.9863 | GPTQ | METRIC - error 393.24
+2026-11-01T01:50:24.9867 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(15/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](15/17): Propagating:   5%|▌         | 7/128 [00:00<00:01, 69.22it/s](15/17): Propagating:  12%|█▎        | 16/128 [00:00<00:01, 80.03it/s](15/17): Propagating:  19%|█▉        | 24/128 [00:00<00:01, 78.04it/s](15/17): Propagating:  27%|██▋       | 34/128 [00:00<00:01, 84.26it/s](15/17): Propagating:  36%|███▌      | 46/128 [00:00<00:00, 95.51it/s](15/17): Propagating:  44%|████▍     | 56/128 [00:00<00:00, 93.72it/s](15/17): Propagating:  52%|█████▏    | 66/128 [00:00<00:00, 92.46it/s](15/17): Propagating:  59%|█████▉    | 76/128 [00:00<00:00, 91.78it/s](15/17): Propagating:  67%|██████▋   | 86/128 [00:00<00:00, 92.06it/s](15/17): Propagating:  77%|███████▋  | 98/128 [00:01<00:00, 97.94it/s](15/17): Propagating:  85%|████████▌ | 109/128 [00:01<00:00, 101.39it/s](15/17): Propagating:  95%|█████████▍| 121/128 [00:01<00:00, 105.80it/s](15/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 96.29it/s] 
+(16/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](16/17): Calibrating:  12%|█▎        | 16/128 [00:00<00:00, 119.15it/s](16/17): Calibrating:  22%|██▏       | 28/128 [00:00<00:02, 44.80it/s] (16/17): Calibrating:  27%|██▋       | 35/128 [00:00<00:02, 31.28it/s](16/17): Calibrating:  31%|███▏      | 40/128 [00:01<00:02, 30.52it/s](16/17): Calibrating:  34%|███▍      | 44/128 [00:01<00:02, 30.93it/s](16/17): Calibrating:  38%|███▊      | 48/128 [00:01<00:02, 30.26it/s](16/17): Calibrating:  41%|████      | 52/128 [00:01<00:03, 25.09it/s](16/17): Calibrating:  43%|████▎     | 55/128 [00:01<00:03, 24.02it/s](16/17): Calibrating:  46%|████▌     | 59/128 [00:01<00:02, 26.00it/s](16/17): Calibrating:  49%|████▉     | 63/128 [00:02<00:02, 27.68it/s](16/17): Calibrating:  52%|█████▏    | 66/128 [00:02<00:02, 27.41it/s](16/17): Calibrating:  54%|█████▍    | 69/128 [00:02<00:02, 23.48it/s](16/17): Calibrating:  56%|█████▋    | 72/128 [00:02<00:02, 21.58it/s](16/17): Calibrating:  59%|█████▉    | 76/128 [00:02<00:02, 24.31it/s](16/17): Calibrating:  62%|██████▎   | 80/128 [00:02<00:01, 26.53it/s](16/17): Calibrating:  66%|██████▌   | 84/128 [00:02<00:01, 26.84it/s](16/17): Calibrating:  68%|██████▊   | 87/128 [00:03<00:01, 23.21it/s](16/17): Calibrating:  70%|███████   | 90/128 [00:03<00:01, 21.59it/s](16/17): Calibrating:  73%|███████▎  | 94/128 [00:03<00:01, 24.31it/s](16/17): Calibrating:  77%|███████▋  | 98/128 [00:03<00:01, 26.55it/s](16/17): Calibrating:  80%|███████▉  | 102/128 [00:03<00:00, 27.25it/s](16/17): Calibrating:  82%|████████▏ | 105/128 [00:03<00:00, 23.59it/s](16/17): Calibrating:  84%|████████▍ | 108/128 [00:03<00:00, 21.21it/s](16/17): Calibrating:  88%|████████▊ | 112/128 [00:04<00:00, 23.93it/s](16/17): Calibrating:  91%|█████████ | 116/128 [00:04<00:00, 26.20it/s](16/17): Calibrating:  94%|█████████▍| 120/128 [00:04<00:00, 28.03it/s](16/17): Calibrating:  96%|█████████▌| 123/128 [00:04<00:00, 24.21it/s](16/17): Calibrating:  98%|█████████▊| 126/128 [00:04<00:00, 21.73it/s](16/17): Calibrating: 100%|██████████| 128/128 [00:04<00:00, 26.93it/s]
+2026-11-01T01:50:31.5984 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.14.self_attn.q_proj', 'model.layers.14.self_attn.o_proj']
+2026-11-01T01:50:31.6591 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:31.6593 | GPTQ | METRIC - error 115.40
+2026-11-01T01:50:31.6597 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.6598 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:31.6599 | GPTQ | METRIC - error 7481.65
+2026-11-01T01:50:31.6602 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.6643 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.14.self_attn.k_proj', 'model.layers.14.self_attn.v_proj']
+2026-11-01T01:50:31.7149 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:31.7151 | GPTQ | METRIC - error 1725.18
+2026-11-01T01:50:31.7154 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.7155 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:31.7156 | GPTQ | METRIC - error 3108.45
+2026-11-01T01:50:31.7158 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.7200 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.14.mlp.gate_proj', 'model.layers.14.mlp.up_proj']
+2026-11-01T01:50:31.7840 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:31.7842 | GPTQ | METRIC - error 9867.61
+2026-11-01T01:50:31.7845 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.7846 | GPTQ | METRIC - time 0.06s
+2026-11-01T01:50:31.7847 | GPTQ | METRIC - error 14443.53
+2026-11-01T01:50:31.7849 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+2026-11-01T01:50:31.7861 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.14.mlp.down_proj']
+2026-11-01T01:50:31.9796 | GPTQ | METRIC - time 0.19s
+2026-11-01T01:50:31.9799 | GPTQ | METRIC - error 529.06
+2026-11-01T01:50:31.9803 | GPTQ | METRIC - Accelerator 0 | usage: 8.98% | total memory: 42.4 Gb
+(16/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](16/17): Propagating:   9%|▉         | 12/128 [00:00<00:00, 116.10it/s](16/17): Propagating:  20%|██        | 26/128 [00:00<00:00, 125.96it/s](16/17): Propagating:  31%|███▏      | 40/128 [00:00<00:00, 131.15it/s](16/17): Propagating:  42%|████▏     | 54/128 [00:00<00:00, 134.35it/s](16/17): Propagating:  53%|█████▎    | 68/128 [00:00<00:00, 130.38it/s](16/17): Propagating:  65%|██████▍   | 83/128 [00:00<00:00, 133.88it/s](16/17): Propagating:  77%|███████▋  | 98/128 [00:00<00:00, 135.28it/s](16/17): Propagating:  88%|████████▊ | 112/128 [00:00<00:00, 134.55it/s](16/17): Propagating:  99%|█████████▉| 127/128 [00:00<00:00, 135.64it/s](16/17): Propagating: 100%|██████████| 128/128 [00:00<00:00, 133.29it/s]
+(17/17): Calibrating:   0%|          | 0/128 [00:00<?, ?it/s](17/17): Calibrating:  12%|█▏        | 15/128 [00:00<00:01, 91.54it/s](17/17): Calibrating:  20%|█▉        | 25/128 [00:00<00:02, 36.36it/s](17/17): Calibrating:  24%|██▍       | 31/128 [00:00<00:03, 28.35it/s](17/17): Calibrating:  27%|██▋       | 35/128 [00:01<00:03, 24.78it/s](17/17): Calibrating:  30%|██▉       | 38/128 [00:01<00:03, 25.21it/s](17/17): Calibrating:  32%|███▏      | 41/128 [00:01<00:03, 25.57it/s](17/17): Calibrating:  34%|███▍      | 44/128 [00:01<00:03, 26.01it/s](17/17): Calibrating:  37%|███▋      | 47/128 [00:01<00:03, 21.80it/s](17/17): Calibrating:  39%|███▉      | 50/128 [00:01<00:04, 19.37it/s](17/17): Calibrating:  41%|████▏     | 53/128 [00:02<00:03, 20.96it/s](17/17): Calibrating:  44%|████▍     | 56/128 [00:02<00:03, 22.31it/s](17/17): Calibrating:  46%|████▌     | 59/128 [00:02<00:02, 23.66it/s](17/17): Calibrating:  48%|████▊     | 62/128 [00:02<00:02, 22.09it/s](17/17): Calibrating:  51%|█████     | 65/128 [00:02<00:03, 19.02it/s](17/17): Calibrating:  53%|█████▎    | 68/128 [00:02<00:03, 19.29it/s](17/17): Calibrating:  55%|█████▌    | 71/128 [00:02<00:02, 21.13it/s](17/17): Calibrating:  58%|█████▊    | 74/128 [00:02<00:02, 22.52it/s](17/17): Calibrating:  60%|██████    | 77/128 [00:03<00:02, 23.81it/s](17/17): Calibrating:  62%|██████▎   | 80/128 [00:03<00:02, 20.08it/s](17/17): Calibrating:  65%|██████▍   | 83/128 [00:03<00:02, 18.11it/s](17/17): Calibrating:  67%|██████▋   | 86/128 [00:03<00:02, 19.95it/s](17/17): Calibrating:  70%|██████▉   | 89/128 [00:03<00:01, 21.70it/s](17/17): Calibrating:  72%|███████▏  | 92/128 [00:03<00:01, 23.04it/s](17/17): Calibrating:  74%|███████▍  | 95/128 [00:03<00:01, 22.06it/s](17/17): Calibrating:  77%|███████▋  | 98/128 [00:04<00:01, 18.84it/s](17/17): Calibrating:  79%|███████▉  | 101/128 [00:04<00:01, 19.01it/s](17/17): Calibrating:  81%|████████▏ | 104/128 [00:04<00:01, 20.86it/s](17/17): Calibrating:  84%|████████▎ | 107/128 [00:04<00:00, 22.42it/s](17/17): Calibrating:  86%|████████▌ | 110/128 [00:04<00:00, 23.64it/s](17/17): Calibrating:  88%|████████▊ | 113/128 [00:04<00:00, 20.44it/s](17/17): Calibrating:  91%|█████████ | 116/128 [00:05<00:00, 18.00it/s](17/17): Calibrating:  93%|█████████▎| 119/128 [00:05<00:00, 19.91it/s](17/17): Calibrating:  95%|█████████▌| 122/128 [00:05<00:00, 21.68it/s](17/17): Calibrating:  98%|█████████▊| 125/128 [00:05<00:00, 23.07it/s](17/17): Calibrating: 100%|██████████| 128/128 [00:05<00:00, 23.04it/s](17/17): Calibrating: 100%|██████████| 128/128 [00:05<00:00, 23.05it/s]
+2026-11-01T01:50:39.1442 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.15.self_attn.q_proj', 'model.layers.15.self_attn.o_proj']
+2026-11-01T01:50:39.1741 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:39.1743 | GPTQ | METRIC - error 558.95
+2026-11-01T01:50:39.1747 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.1747 | GPTQ | METRIC - time 0.03s
+2026-11-01T01:50:39.1748 | GPTQ | METRIC - error 7113.32
+2026-11-01T01:50:39.1750 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.1769 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.15.self_attn.k_proj', 'model.layers.15.self_attn.v_proj']
+2026-11-01T01:50:39.2228 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:39.2230 | GPTQ | METRIC - error 1833.75
+2026-11-01T01:50:39.2234 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.2235 | GPTQ | METRIC - time 0.05s
+2026-11-01T01:50:39.2235 | GPTQ | METRIC - error 3513.57
+2026-11-01T01:50:39.2238 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.2280 | compress_module_list | INFO - Quantizing 2 module(s): ['model.layers.15.mlp.gate_proj', 'model.layers.15.mlp.up_proj']
+2026-11-01T01:50:39.3061 | GPTQ | METRIC - time 0.08s
+2026-11-01T01:50:39.3063 | GPTQ | METRIC - error 12048.84
+2026-11-01T01:50:39.3067 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.3068 | GPTQ | METRIC - time 0.08s
+2026-11-01T01:50:39.3068 | GPTQ | METRIC - error 16102.29
+2026-11-01T01:50:39.3071 | GPTQ | METRIC - Accelerator 0 | usage: 9.38% | total memory: 42.4 Gb
+2026-11-01T01:50:39.3090 | compress_module_list | INFO - Quantizing 1 module(s): ['model.layers.15.mlp.down_proj']
+2026-11-01T01:50:39.6185 | GPTQ | METRIC - time 0.31s
+2026-11-01T01:50:39.6187 | GPTQ | METRIC - error 1281.21
+2026-11-01T01:50:39.6191 | GPTQ | METRIC - Accelerator 0 | usage: 10.22% | total memory: 42.4 Gb
+(17/17): Propagating:   0%|          | 0/128 [00:00<?, ?it/s](17/17): Propagating:  19%|█▉        | 24/128 [00:00<00:00, 236.08it/s](17/17): Propagating:  38%|███▊      | 48/128 [00:00<00:00, 134.15it/s](17/17): Propagating:  50%|█████     | 64/128 [00:00<00:00, 104.48it/s](17/17): Propagating:  59%|█████▉    | 76/128 [00:00<00:00, 107.49it/s](17/17): Propagating:  69%|██████▉   | 88/128 [00:00<00:00, 110.10it/s](17/17): Propagating:  78%|███████▊  | 100/128 [00:00<00:00, 112.30it/s](17/17): Propagating:  88%|████████▊ | 112/128 [00:00<00:00, 109.64it/s](17/17): Propagating:  97%|█████████▋| 124/128 [00:01<00:00, 89.69it/s] (17/17): Propagating: 100%|██████████| 128/128 [00:01<00:00, 104.44it/s]
+2026-11-01T01:50:40.8548 | finalize | INFO - Compression lifecycle finalized for 1 modifiers
+oneshot done in 87 s
+Compressing model:   0%|          | 0/112 [00:00<?, ?it/s]Compressing model:   1%|          | 1/112 [00:00<00:37,  2.97it/s]Compressing model:  12%|█▎        | 14/112 [00:00<00:02, 40.31it/s]Compressing model:  51%|█████     | 57/112 [00:00<00:00, 155.57it/s]Compressing model:  72%|███████▏  | 81/112 [00:00<00:00, 144.64it/s]Compressing model: 100%|██████████| 112/112 [00:00<00:00, 143.07it/s]
+2026-11-01T01:50:41.6431 | _retie_embeddings | INFO - Re-tied input/output embeddings; saving a single shared table.
+/root/autodl-tmp/venv-quant/lib/python3.12/site-packages/transformers/modeling_utils.py:3430: UserWarning: Attempting to save a model with offloaded modules. Ensure that unallocated cpu memory exceeds the `shard_size` (50GB default)
+  warnings.warn(
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:01<00:00,  1.14s/it]Writing model shards: 100%|██████████| 1/1 [00:01<00:00,  1.14s/it]
+2026-11-01T01:50:42.8226 | resave_config | INFO - Resaved original config with patched fields to /root/autodl-tmp/llmc/gptq_w4a16_asym/config.json
+Dispatching model:   0%|          | 0/215 [00:00<?, ?it/s]Dispatching model: 100%|██████████| 215/215 [00:00<00:00, 18984.74it/s]
+saved /root/autodl-tmp/llmc/gptq_w4a16_asym (1000 MB on disk)

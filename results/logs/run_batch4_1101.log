@@ -1,0 +1,105 @@
+== r1_fp16 01:48:47
+  arc_challenge                acc          0.3166 ± 0.0136
+  arc_challenge                acc_norm     0.3686 ± 0.0141
+  arc_easy                     acc          0.6654 ± 0.0097
+  arc_easy                     acc_norm     0.6174 ± 0.0100
+  boolq                        acc          0.6413 ± 0.0084
+  hellaswag                    acc          0.4813 ± 0.0050
+  hellaswag                    acc_norm     0.6412 ± 0.0048
+  lambada_openai               acc          0.6293 ± 0.0067
+  piqa                         acc          0.7524 ± 0.0101
+  piqa                         acc_norm     0.7497 ± 0.0101
+  winogrande                   acc          0.6077 ± 0.0137
+== r2_int4_g128 01:53:09
+  arc_challenge                acc          0.2850 ± 0.0132
+  arc_challenge                acc_norm     0.3183 ± 0.0136
+  arc_easy                     acc          0.6170 ± 0.0100
+  arc_easy                     acc_norm     0.5585 ± 0.0102
+  boolq                        acc          0.4841 ± 0.0087
+  hellaswag                    acc          0.4545 ± 0.0050
+  hellaswag                    acc_norm     0.6028 ± 0.0049
+  lambada_openai               acc          0.5562 ± 0.0069
+  piqa                         acc          0.7198 ± 0.0105
+  piqa                         acc_norm     0.7231 ± 0.0104
+  winogrande                   acc          0.6085 ± 0.0137
+== e1f_clip_g128 01:57:22
+  arc_challenge                acc          0.3046 ± 0.0134
+  arc_challenge                acc_norm     0.3439 ± 0.0139
+  arc_easy                     acc          0.6418 ± 0.0098
+  arc_easy                     acc_norm     0.5871 ± 0.0101
+  boolq                        acc          0.5248 ± 0.0087
+  hellaswag                    acc          0.4580 ± 0.0050
+  hellaswag                    acc_norm     0.6044 ± 0.0049
+  lambada_openai               acc          0.5554 ± 0.0069
+  piqa                         acc          0.7361 ± 0.0103
+  piqa                         acc_norm     0.7285 ± 0.0104
+  winogrande                   acc          0.6117 ± 0.0137
+== e1f_clip_g32 02:01:11
+  arc_challenge                acc          0.3251 ± 0.0137
+  arc_challenge                acc_norm     0.3584 ± 0.0140
+  arc_easy                     acc          0.6435 ± 0.0098
+  arc_easy                     acc_norm     0.6044 ± 0.0100
+  boolq                        acc          0.5862 ± 0.0086
+  hellaswag                    acc          0.4650 ± 0.0050
+  hellaswag                    acc_norm     0.6228 ± 0.0048
+  lambada_openai               acc          0.5847 ± 0.0069
+  piqa                         acc          0.7416 ± 0.0102
+  piqa                         acc_norm     0.7437 ± 0.0102
+  winogrande                   acc          0.6093 ± 0.0137
+== r0_hf_fp16 02:05:02
+  arc_challenge                acc          0.3166 ± 0.0136
+  arc_challenge                acc_norm     0.3677 ± 0.0141
+  arc_easy                     acc          0.6633 ± 0.0097
+  arc_easy                     acc_norm     0.6183 ± 0.0100
+  boolq                        acc          0.6376 ± 0.0084
+  hellaswag                    acc          0.4817 ± 0.0050
+  hellaswag                    acc_norm     0.6416 ± 0.0048
+  lambada_openai               acc          0.6291 ± 0.0067
+  piqa                         acc          0.7514 ± 0.0101
+  piqa                         acc_norm     0.7486 ± 0.0101
+  winogrande                   acc          0.6085 ± 0.0137
+== compare r1_fp16 vs r2_int4_g128
+r2_int4_g128 vs r1_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   31.83   -5.03 [ -7.17,  -2.90]*   9.64   4.61
+  arc_easy               acc_norm    2376   61.74   55.85   -5.89 [ -7.41,  -4.42]*   9.81   3.91
+  boolq                  acc         3270   64.13   48.41  -15.72 [-17.89, -13.58]*  29.27  13.55
+  hellaswag              acc_norm   10042   64.12   60.28   -3.84 [ -4.40,  -3.28]*   6.09   2.25
+  lambada_openai         acc         5153   62.93   55.62   -7.32 [ -8.40,  -6.27]*  11.53   4.21
+  piqa                   acc         1838   75.24   71.98   -3.26 [ -4.57,  -1.96]*   5.88   2.61
+  winogrande             acc         1267   60.77   60.85   +0.08 [ -2.13,  +2.21]    7.97   8.05
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+== compare r1_fp16 vs e1f_clip_g128
+e1f_clip_g128 vs r1_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   34.39   -2.47 [ -4.52,  -0.43]*   7.59   5.12
+  arc_easy               acc_norm    2376   61.74   58.71   -3.03 [ -4.42,  -1.60]*   7.74   4.71
+  boolq                  acc         3270   64.13   52.48  -11.65 [-13.67,  -9.66]*  22.87  11.22
+  hellaswag              acc_norm   10042   64.12   60.44   -3.68 [ -4.23,  -3.15]*   5.79   2.10
+  lambada_openai         acc         5153   62.93   55.54   -7.39 [ -8.42,  -6.33]*  11.31   3.92
+  piqa                   acc         1838   75.24   73.61   -1.63 [ -2.88,  -0.44]*   4.24   2.61
+  winogrande             acc         1267   60.77   61.17   +0.39 [ -1.74,  +2.53]    7.42   7.81
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+== compare r1_fp16 vs e1f_clip_g32
+e1f_clip_g32 vs r1_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   35.84   -1.02 [ -2.82,  +0.77]    5.46   4.44
+  arc_easy               acc_norm    2376   61.74   60.44   -1.30 [ -2.48,  -0.13]*   4.84   3.54
+  boolq                  acc         3270   64.13   58.62   -5.50 [ -7.06,  -3.94]*  13.36   7.86
+  hellaswag              acc_norm   10042   64.12   62.28   -1.84 [ -2.32,  -1.35]*   4.05   2.21
+  lambada_openai         acc         5153   62.93   58.47   -4.46 [ -5.34,  -3.59]*   7.59   3.12
+  piqa                   acc         1838   75.24   74.16   -1.09 [ -2.23,  +0.05]    3.59   2.50
+  winogrande             acc         1267   60.77   60.93   +0.16 [ -1.89,  +2.13]    6.71   6.87
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+== compare r0_hf_fp16 vs r1_fp16
+r1_fp16 vs r0_hf_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.77   36.86   +0.09 [ -0.34,  +0.51]    0.26   0.34
+  arc_easy               acc_norm    2376   61.83   61.74   -0.08 [ -0.42,  +0.25]    0.38   0.29
+  boolq                  acc         3270   63.76   64.13   +0.37 [ -0.18,  +0.92]    1.07   1.44
+  hellaswag              acc_norm   10042   64.16   64.12   -0.04 [ -0.16,  +0.08]    0.21   0.17
+  lambada_openai         acc         5153   62.91   62.93   +0.02 [ -0.27,  +0.29]    0.54   0.56
+  piqa                   acc         1838   75.14   75.24   +0.11 [ -0.11,  +0.33]    0.05   0.16
+  winogrande             acc         1267   60.85   60.77   -0.08 [ -0.55,  +0.39]    0.39   0.32
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+BATCH4 DONE 02:09:51

@@ -1,0 +1,15 @@
+/root/miniconda3/lib/python3.12/site-packages/requests/__init__.py:109: RequestsDependencyWarning: urllib3 (2.1.0) or chardet (6.0.0.post1)/charset_normalizer (2.0.4) doesn't match a supported version!
+  warnings.warn(
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:01<02:50,  1.17s/it]Loading weights:  21%|██        | 31/146 [00:01<00:03, 32.68it/s]Loading weights:  32%|███▏      | 47/146 [00:01<00:02, 44.17it/s]Loading weights:  41%|████      | 60/146 [00:01<00:01, 47.98it/s]Loading weights:  48%|████▊     | 70/146 [00:01<00:01, 55.20it/s]Loading weights:  55%|█████▍    | 80/146 [00:01<00:01, 55.86it/s]Loading weights:  61%|██████    | 89/146 [00:02<00:00, 58.93it/s]Loading weights:  66%|██████▋   | 97/146 [00:02<00:00, 52.85it/s]Loading weights:  71%|███████   | 104/146 [00:02<00:00, 49.55it/s]Loading weights:  75%|███████▌  | 110/146 [00:02<00:00, 51.33it/s]Loading weights:  82%|████████▏ | 120/146 [00:02<00:00, 49.50it/s]Loading weights:  88%|████████▊ | 129/146 [00:02<00:00, 49.51it/s]Loading weights:  95%|█████████▌| 139/146 [00:03<00:00, 58.32it/s]Loading weights: 100%|██████████| 146/146 [00:03<00:00, 47.10it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  0%|          | 0/20 [00:00<?, ?it/s]100%|██████████| 20/20 [00:00<00:00, 529.12it/s]
+Tokenizing inputs:   0%|          | 0/80 [00:00<?, ?it/s][transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+Tokenizing inputs: 100%|██████████| 80/80 [00:00<00:00, 3841.82it/s]
+Running loglikelihood requests:   0%|          | 0/80 [00:00<?, ?it/s]Passed argument batch_size = auto:1. Detecting largest batch size
+Determined largest batch size: 64
+Running loglikelihood requests:   1%|▏         | 1/80 [00:01<02:00,  1.53s/it]Running loglikelihood requests: 100%|██████████| 80/80 [00:01<00:00, 50.52it/s]
+
+[smoke_hf] backend=hf group=None (0.3 min)
+  arc_easy                     acc          0.6500 ± 0.1094
+  arc_easy                     acc_norm     0.5000 ± 0.1147
+saved results/lm_eval/smoke_hf_samples.json, appended 2 rows to results/lm_eval/summary.csv
