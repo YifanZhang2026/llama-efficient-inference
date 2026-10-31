@@ -213,6 +213,44 @@ wq / wk / wv / w1 / w3 的输入都是 attention_norm / ffn_norm 之后的 2048 
 
 解释：
 
+### E1e INT4 下游任务精度（状态：脚本 `eval_tasks.py` 已写好，待在 A100 上跑）
+
+**为什么要做**：E1b / E1d 只有 PPL / acc / agree / KL，再加上 6 条生成样例，有三个弱点：(1) PPL 增加 24% 对实际任务意味着什么，说不清楚；(2) 测量用的是我们自己的模型代码和评估脚本，没有外部参照，没法证明 FP16 基线本身是对的（P3：缺少 RoPE scaling）；(3) 没有和别人的 INT4 实现对比，无法判断我们 RTN 的损失是"正常水平"还是"实现有 bug"。
+
+**设计（三层对照）**
+
+| 行 | 模型 | 作用 |
+|---|---|---|
+| R0 | HF `transformers` 官方实现的 Llama-3.2-1B，FP16，lm-eval 自带的 `hf` 后端 | **外部参照**：验证评估流程，并和 Meta model card 对照 |
+| R1 | 我们的 `llama/model.py`，FP16 | 和 R0 的差 = 我们模型代码的偏差（预计主要来自 P3） |
+| R2 | 我们的 INT4 RTN g128 | **主结果**：R2 − R1 = 量化损失 |
+| R3 | 我们的 INT4 RTN g32 | 精度和体积的取舍（体积 +10%） |
+| R4 | torchao `Int4WeightOnlyConfig(group_size=128)` 作用在 HF 模型上 | **独立实现的同类方法**：如果 R4 − R0 ≈ R2 − R1，说明我们的量化实现没有问题 |
+| R5（可选） | 更强的量化方法（GPTQ / AWQ / HQQ，用现成的库） | 说明 RTN 的损失中，有多少可以靠更好的算法找回来 |
+
+**任务**（lm-evaluation-harness，和 GPTQ / AWQ / QuaRot / SpinQuant 等论文报告的零样本任务相同）：ARC-easy、ARC-challenge（acc_norm）、HellaSwag（acc_norm）、PIQA、WinoGrande、BoolQ、LAMBADA-openai（acc + ppl）；另外加 MMLU 5-shot（1B 模型的得分接近随机的 25%，区分度低，只作参考）。
+
+**指标**
+1. 每个任务的准确率 ± stderr，以及平均值。
+2. **配对差值**：INT4 − FP16 在同一批题目上，用 paired bootstrap 算 95% 置信区间，判断下降是否显著。
+3. **翻转率（flips）**：FP16 答对而 INT4 答错的比例，以及反过来的比例。平均准确率可能因为两个方向相互抵消而看不出变化，翻转率不会（Dutta et al. 2024, *Accuracy is Not All You Need*）。
+4. 沿用 E1b 的 WikiText-2 PPL、agree、KL，作为"分布层面"的指标。
+
+**注意**
+- lm-eval 的多选题是用 loglikelihood 评分的，属于整段 teacher forcing（M > 16），所以测的是**量化方法本身**的精度，和 dequant 用 v1 还是 v4 无关（v1–v3 逐位相同；v4 单独看 T5）。
+- `eval_tasks.py`（Claude 写，2026-10-31）：`--backend ours` 是 lm-eval 的适配层，调用我们的模型（R1 / R2 / R3；`--state-dict` 可以加载 quant_improve 产生的伪量化权重）；`--backend hf` 是 lm-eval 自带的 HFLM（R0）；`--backend hf-torchao` 对应 R4。打分核心已在本机用玩具因果模型验证：批处理加右侧 padding 的结果与逐条计算一致（差 < 2e-6）。
+- **BOS**：两种 backend 都在开头加 `<|begin_of_text|>`（hf 用 `add_bos_token=True`），保证 R0 和 R1 看到的 token 完全相同。
+- **R4 和 R0 的对比要在 bf16 下做**：torchao 的 tinygemm int4 需要 bf16，所以 R4 要和 `--backend hf --dtype bfloat16` 比。另外，tinygemm 的量化网格从 min 开始，zp 是浮点数；我们的 zp 是取整后的整数，网格让 0 能被精确表示。两者同属"RTN g128 非对称"，但不是同一个网格，所以预期 R4 和 R2 的损失接近，而不是完全相等。
+- 顺序：先 `--limit 20 --tasks arc_easy` 做冒烟测试；再跑 R0 和 R1，确认两者的差在合理范围内（P3）；最后跑 INT4。用 `--compare REF NEW` 输出配对 bootstrap 置信区间和翻转率。
+- 要用的数据集都走 hf-mirror 下载。
+
+**预测**（Yifan 填）：
+- R1 与 R0 的差：
+- R2 平均掉多少个百分点、哪个任务掉得最多：
+- R4 − R0 与 R2 − R1 是否接近：
+
+结果：
+
 ### E2 FP16 vs INT4 性能（input_len=256, output_len=32）
 
 `bench.py`，warmup 3，iters 10，2026-10-13。
@@ -495,7 +533,9 @@ ncu --profile-from-start off --metrics dram__bytes_op_read.sum,dram__bytes_op_wr
 | T8 | vLLM 作为上限（可选） | A100 | FP16：vLLM 跑 Llama 3.2-1B，测 bs=1 decode；INT4：先确认 RTN 权重能不能转成 GPTQ 格式（zp 的 −1 偏移、打包顺序），能转再测 Marlin | — | 新小节 |
 | T9 | v2–v4 的 HBM 字节数 | 本机 | 用 ncu 读每个 kernel 的 DRAM 读写字节 | v2 约 15 B / 权重，v3 约 2.5 B（加上 matmul 读取共 4.5 B），v4 约 0.53 B | I1–I3 |
 
-需要先补的工具（Claude 写）：`dequant_traffic.py --impl`（T9）；把本机扫参脚本整理成 `int4_gemv_bench.py`（T4）；逐 token decode 的评估脚本（T5）；`bench.py --cuda-graph`（T6）。
+| T10 | **INT4 下游任务精度**（E1e） | A100 | lm-eval：R0 HF FP16 / R1 我们的 FP16 / R2 INT4 g128 / R3 g32 / R4 torchao INT4，7 个零样本任务 + MMLU；报告 acc ± stderr、配对 bootstrap 置信区间、翻转率 | Yifan 填 | E1e |
+
+需要先补的工具（Claude 写）：`eval_tasks.py`，lm-eval 适配层（T10）；`dequant_traffic.py --impl`（T9）；把本机扫参脚本整理成 `int4_gemv_bench.py`（T4）；逐 token decode 的评估脚本（T5）；`bench.py --cuda-graph`（T6）。
 
 Yifan 待填：I2 中的三项预测（每个 Linear 的 kernel 数、dequant 的 GPU 时间、v3 decode 的耗时和瓶颈）。
 
