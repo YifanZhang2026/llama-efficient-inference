@@ -1,0 +1,25 @@
+GPU: NVIDIA A100-PCIE-40GB | torch 2.8.0+cu128 | clip ratios [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7]
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+  built rtn_g128 in 0 s
+  built rtn_g32 in 0 s
+  built clip_g128 in 1 s
+  built clip_g32 in 1 s
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+FP16 size (tied embedding counted once): 2357.0 MB
+[rtn_g128                      ]  1127.1 MB | rel MSE 10.969e-3 | alpaca PPL 11.0276 (+1.367) KL 0.1572 | wikitext2 PPL 12.2879 (+2.402) KL 0.2174 (35 s)
+[rtn_g32                       ]  1237.6 MB | rel MSE  6.767e-3 | alpaca PPL 10.2963 (+0.636) KL 0.0875 | wikitext2 PPL 11.0278 (+1.142) KL 0.1099 (34 s)
+[rtn_g128+w2_fp16              ]  1503.1 MB | rel MSE  9.308e-3 | alpaca PPL 10.3754 (+0.715) KL 0.0797 | wikitext2 PPL 10.9900 (+1.104) KL 0.1020 (35 s)
+[rtn_g128+w2_g32               ]  1151.1 MB | rel MSE 10.337e-3 | alpaca PPL 10.6571 (+0.997) KL 0.1222 | wikitext2 PPL 11.6062 (+1.720) KL 0.1598 (35 s)
+[rtn_g128+block1_fp16          ]  1212.3 MB | rel MSE 10.479e-3 | alpaca PPL 10.7387 (+1.079) KL 0.1106 | wikitext2 PPL 11.4383 (+1.552) KL 0.1421 (35 s)
+[rtn_g128+w2_g32+block1_fp16   ]  1234.8 MB | rel MSE  9.886e-3 | alpaca PPL 10.5808 (+0.921) KL 0.0956 | wikitext2 PPL 11.1899 (+1.304) KL 0.1208 (35 s)
+[rtn_g128+lm_head_fp16         ]   994.0 MB | rel MSE  8.146e-3 | alpaca PPL 10.8982 (+1.238) KL 0.1413 | wikitext2 PPL 12.0944 (+2.208) KL 0.2017 (35 s)
+[clip_g128                     ]  1127.1 MB | rel MSE  9.892e-3 | alpaca PPL 10.8557 (+1.195) KL 0.1470 | wikitext2 PPL 11.8918 (+2.006) KL 0.1849 (35 s)
+  saved /root/autodl-tmp/fakequant/clip_g128.pth
+[clip_g128+w2_g32              ]  1151.1 MB | rel MSE  9.371e-3 | alpaca PPL 10.5639 (+0.904) KL 0.1246 | wikitext2 PPL 11.4949 (+1.609) KL 0.1520 (35 s)
+  saved /root/autodl-tmp/fakequant/clip_g128+w2_g32.pth
+[clip_g128+w2_g32+block1_fp16  ]  1234.8 MB | rel MSE  8.962e-3 | alpaca PPL 10.3670 (+0.707) KL 0.0949 | wikitext2 PPL 11.0494 (+1.163) KL 0.1110 (35 s)
+  saved /root/autodl-tmp/fakequant/clip_g128+w2_g32+block1_fp16.pth
+[clip_g32                      ]  1237.6 MB | rel MSE  6.431e-3 | alpaca PPL 10.2877 (+0.627) KL 0.0853 | wikitext2 PPL 10.9994 (+1.113) KL 0.1084 (35 s)
+appended 22 rows to results/quant_improve.csv
