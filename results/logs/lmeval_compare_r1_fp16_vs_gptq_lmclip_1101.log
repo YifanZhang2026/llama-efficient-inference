@@ -1,0 +1,10 @@
+gptq_lmclip vs r1_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   35.75   -1.11 [ -2.90,  +0.68]    5.38   4.27
+  arc_easy               acc_norm    2376   61.74   59.43   -2.31 [ -3.62,  -1.01]*   6.31   4.00
+  boolq                  acc         3270   64.13   57.43   -6.70 [ -8.47,  -4.86]*  17.31  10.61
+  hellaswag              acc_norm   10042   64.12   61.69   -2.43 [ -2.92,  -1.94]*   4.42   1.99
+  lambada_openai         acc         5153   62.93   58.08   -4.85 [ -5.80,  -3.92]*   8.50   3.65
+  piqa                   acc         1838   75.24   73.50   -1.74 [ -2.88,  -0.65]*   3.86   2.12
+  winogrande             acc         1267   60.77   61.17   +0.39 [ -1.50,  +2.37]    6.00   6.39
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.

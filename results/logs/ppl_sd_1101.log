@@ -1,0 +1,12 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+[gptq] 112 INT4 Linear: max |QuantizedLinear.dequantize_packed - fake| = 0.000e+00
+[gptq_lmfp16 ] alpaca PPL 10.3002 (+0.640) KL 0.0860 | wikitext2 PPL 10.6749 (+0.789) KL 0.0743
+[gptq_lmclip ] alpaca PPL 10.3511 (+0.691) KL 0.1002 | wikitext2 PPL 10.8149 (+0.929) KL 0.0871
+[awq] 112 INT4 Linear: max |QuantizedLinear.dequantize_packed - fake| = 0.000e+00
+[awq_lmfp16  ] alpaca PPL 10.4413 (+0.781) KL 0.0874 | wikitext2 PPL 11.0574 (+1.171) KL 0.1084
+[awq_lmclip  ] alpaca PPL 10.4913 (+0.831) KL 0.1017 | wikitext2 PPL 11.2044 (+1.318) KL 0.1211
+appended 8 rows to results/ppl_sd.csv
+PPLSD DONE

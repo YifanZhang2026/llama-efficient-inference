@@ -1,0 +1,11 @@
+converted 112 Linear; lm_head tied to embed_tokens (FP16)
+[transformers] `run_compressed` is deprecated and will be removed in a future version. Use `dequantize=True` instead of `run_compressed=False`.
+/root/autodl-tmp/venv-quant/lib/python3.12/site-packages/transformers/quantizers/auto.py:279: UserWarning: You passed `quantization_config` or equivalent parameters to `from_pretrained` but the model you're loading already has a `quantization_config` attribute. The `quantization_config` from the model will be used.However, loading attributes (e.g. ['dequantize', 'use_optimized_inference']) will be overwritten with the one you passed to `from_pretrained`. The rest will be ignored.
+  warnings.warn(warning_msg)
+Applying quantization config:   0%|          | 0/112 [00:00<?, ?it/s]Applying quantization config:  40%|████      | 45/112 [00:00<00:00, 265.29it/s]Applying quantization config: 100%|██████████| 112/112 [00:00<00:00, 616.24it/s]
+Compressing model:   0%|          | 0/112 [00:00<?, ?it/s]Compressing model: 100%|██████████| 112/112 [00:00<00:00, 10320.81it/s]
+Loading weights:   0%|          | 0/482 [00:00<?, ?it/s]Loading weights:   9%|▊         | 41/482 [00:00<00:01, 403.30it/s]Loading weights:  57%|█████▋    | 277/482 [00:00<00:00, 1531.70it/s]Loading weights: 100%|██████████| 482/482 [00:00<00:00, 1602.50it/s]
+Dispatching model:   0%|          | 0/215 [00:00<?, ?it/s]Dispatching model: 100%|██████████| 215/215 [00:00<00:00, 13427.67it/s]
+Decompressing model:   0%|          | 0/112 [00:00<?, ?it/s]Decompressing model:  83%|████████▎ | 93/112 [00:00<00:00, 927.42it/s]Decompressing model: 100%|██████████| 112/112 [00:00<00:00, 963.93it/s]
+check vs transformers decompression: max |ours - HF| over 112 Linear = 0.000e+00
+saved /root/autodl-tmp/fakequant/awq_int4.pt and awq_fake.pth

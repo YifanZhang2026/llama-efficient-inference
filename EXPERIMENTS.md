@@ -348,6 +348,59 @@ wq / wk / wv / w1 / w3 的输入都是 attention_norm / ffn_norm 之后的 2048 
 
 解释：
 
+### E1f-C GPTQ / AWQ 权重转成本仓库的 INT4 格式，用 v4 运行
+
+`convert_ct.py`（9e30833）、`ppl_sd.py`（c214ce2）、`bench.py --int4-pack / --lm-head-fp16`（11a42cc），`scripts/run_gptq_v4_1101.sh`；`logs/convert_awq_1101.log`、`logs/ppl_sd_1101.log`、`logs/bench_gptqv4_*_1101.log`、`logs/lmeval_gptq_*_1101.log`、`results/ppl_sd.csv`、`results/bench_part3.csv`（mode `int4-v4+graph+gptq[+lmfp16]`），2026-11-01，A100。
+
+GPTQ / AWQ（E1f-B）和本仓库的 RTN 是同一种格式（4-bit 非对称、g128、每组 FP16 scale + 整数 zero_point），只是每个权重取整到哪个值不同。把 compressed-tensors 的 checkpoint 转成 `QuantizedLinear` 的缓冲区：
+- 每个 int32 装 8 个 nibble，元素 0 在低位；nibble = 带符号 int4 + 8，q 和 zp 都直接取 nibble，+8 在 (q − zp) 中抵消。
+- HF 的 q / k 行顺序还原成 Meta 的顺序，scale 和 zp 的行一起还原。
+- **检查**：(1) 转换后按我们的公式反量化，与 transformers 自己解压的权重比较，112 个 Linear 最大差 **0**（GPTQ、AWQ 都是）；(2) 转换后的缓冲区经 `QuantizedLinear.dequantize_packed` 还原，与伪量化权重最大差 **0**；(3) v4 + CUDA Graph 下 graph 与 eager 生成的 token 相同。
+- lm_head 两种：`lmfp16`（与 checkpoint 一致，保留 FP16）、`lmclip`（用 E1f 的 clip_g128 量化，全部 113 个 Linear 都是 INT4）。
+
+**精度**（我们的模型代码，口径同 E1b；lm-eval 同 E1e）
+
+| 方案 | 体积（E1f 口径） | WikiText-2 ΔPPL / KL | Alpaca ΔPPL / KL | lm-eval 7 项平均（Δ vs R1） | boolq | lambada |
+|---|---:|---|---|---|---:|---:|
+| R1 FP16 | 2357.0 MB | 0 | 0 | 60.83 | 64.13 | 62.93 |
+| RTN g128（R2） | 1127.1 MB | +2.402 / 0.217 | +1.367 / 0.157 | 54.97（−5.86） | 48.41 | 55.62 |
+| clip_g128 | 1127.1 MB | +2.006 / 0.185 | +1.195 / 0.147 | 56.62（−4.21） | 52.48 | 55.54 |
+| clip_g32 | 1237.6 MB | +1.113 / 0.108 | +0.627 / 0.085 | 58.68（−2.15） | 58.62 | 58.47 |
+| **GPTQ + clip_g128 lm_head** | **1127.1 MB** | **+0.929 / 0.087** | +0.691 / 0.100 | 58.15（−2.68） | 57.43 | 58.08 |
+| GPTQ + FP16 lm_head | 994.0 MB | +0.789 / 0.074 | +0.640 / 0.086 | **58.89（−1.94）** | 61.22 | 59.05 |
+| AWQ + clip_g128 lm_head | 1127.1 MB | +1.318 / 0.121 | +0.831 / 0.102 | – | – | – |
+| AWQ + FP16 lm_head | 994.0 MB | +1.171 / 0.108 | +0.781 / 0.087 | – | – | – |
+
+配对比较（vs R1，95% paired bootstrap CI，`*` = 不含 0；`logs/lmeval_compare_r1_fp16_vs_gptq_*_1101.log`）：
+
+| Δ（百分点） | GPTQ + FP16 lm_head | GPTQ + clip lm_head |
+|---|---|---|
+| arc_challenge | −1.02 [−2.82, +0.68] | −1.11 [−2.90, +0.68] |
+| arc_easy | −2.02* [−3.28, −0.80] | −2.31* [−3.62, −1.01] |
+| boolq | −2.91* [−4.28, −1.47] | −6.70* [−8.47, −4.86] |
+| hellaswag | −2.30* [−2.78, −1.85] | −2.43* [−2.92, −1.94] |
+| lambada_openai | −3.88* [−4.81, −2.99] | −4.85* [−5.80, −3.92] |
+| piqa | −1.52* [−2.61, −0.44] | −1.74* [−2.88, −0.65] |
+| winogrande | +0.08 [−1.82, +1.97] | +0.39 [−1.50, +2.37] |
+
+boolq 翻转率（R→W / W→R）：GPTQ + FP16 lm_head 10.00 / 7.09，GPTQ + clip lm_head 17.31 / 10.61（RTN g128 为 29.27 / 13.55）。lambada PPL：6.734 / 6.939（R1 5.431，RTN 7.810）。
+
+**速度**（v4 + CUDA Graph，默认 kernel 配置，bs=1 / 8 / 16 decode ms/步；static = bs=1 常驻显存）
+
+| 方案 | decode | static (MB) |
+|---|---|---:|
+| RTN g128 | 3.313 / 6.084 / 8.685 | 1137 |
+| GPTQ（113 个 Linear 全 INT4） | 3.319 / 6.085 / 8.692 | 1137 |
+| GPTQ + FP16 lm_head | 3.494 / 6.230 / 8.795 | 1506 |
+
+- GPTQ 权重与 RTN 权重在 v4 上速度相同（差 ≤ 0.2%），常驻显存相同。
+- lm_head 保留 FP16：bs=1 每步多 0.18 ms，常驻显存多 369 MB（本仓库的模型代码里 embedding 与 lm_head 是两份张量，共用权重在显存上体现不出来）。
+- 同体积（1127 MB）下：GPTQ + clip lm_head 的 WikiText ΔPPL 0.929，低于 clip_g32（1238 MB）的 1.113；lm-eval 平均 58.15，略低于 clip_g32 的 58.68（boolq −6.70 vs −5.50）。
+
+预测：
+
+解释：
+
 ### E2 FP16 vs INT4 性能（input_len=256, output_len=32）
 
 `bench.py`，warmup 3，iters 10，2026-10-13。

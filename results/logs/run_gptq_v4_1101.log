@@ -1,0 +1,45 @@
+== speed 02:35:23
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=1: captured 31 decode graphs in 6.6 s | graph tokens == eager tokens: True
+[int4] bs=1: prefill 36.82 ms | decode 3.319 ms/step (p10 3.309, p90 3.330) | e2e 139.7 ms (cold 5401.8) | peak 1727 MB (static 1137)
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=8: captured 31 decode graphs in 6.7 s | graph tokens == eager tokens: True
+[int4] bs=8: prefill 47.23 ms | decode 6.085 ms/step (p10 6.036, p90 6.316) | e2e 237.2 ms (cold 911.0) | peak 2744 MB (static 1225)
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=16: captured 31 decode graphs in 6.7 s | graph tokens == eager tokens: True
+[int4] bs=16: prefill 93.56 ms | decode 8.692 ms/step (p10 8.607, p90 9.242) | e2e 365.2 ms (cold 923.4) | peak 4337 MB (static 1307)
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=1: captured 31 decode graphs in 6.6 s | graph tokens == eager tokens: True
+[int4] bs=1: prefill 36.40 ms | decode 3.494 ms/step (p10 3.485, p90 3.508) | e2e 144.8 ms (cold 5322.8) | peak 1720 MB (static 1506)
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=8: captured 31 decode graphs in 6.7 s | graph tokens == eager tokens: True
+[int4] bs=8: prefill 45.99 ms | decode 6.230 ms/step (p10 6.186, p90 6.520) | e2e 241.0 ms (cold 895.4) | peak 3115 MB (static 1595)
+loaded INT4 buffers of 112 Linear from /root/autodl-tmp/fakequant/gptq_int4.pt
+[int4] bs=16: captured 31 decode graphs in 6.5 s | graph tokens == eager tokens: True
+[int4] bs=16: prefill 91.35 ms | decode 8.795 ms/step (p10 8.721, p90 9.209) | e2e 367.0 ms (cold 949.7) | peak 4708 MB (static 1678)
+[int4] bs=1: captured 31 decode graphs in 6.7 s | graph tokens == eager tokens: True
+[int4] bs=1: prefill 39.11 ms | decode 3.313 ms/step (p10 3.301, p90 3.322) | e2e 141.8 ms (cold 5872.4) | peak 1727 MB (static 1137)
+[int4] bs=8: captured 31 decode graphs in 6.7 s | graph tokens == eager tokens: True
+[int4] bs=8: prefill 47.43 ms | decode 6.084 ms/step (p10 6.036, p90 6.286) | e2e 236.8 ms (cold 955.7) | peak 2744 MB (static 1225)
+[int4] bs=16: captured 31 decode graphs in 6.6 s | graph tokens == eager tokens: True
+[int4] bs=16: prefill 93.47 ms | decode 8.685 ms/step (p10 8.612, p90 9.160) | e2e 365.2 ms (cold 939.8) | peak 4337 MB (static 1307)
+== lm-eval 02:38:16
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   35.84   -1.02 [ -2.82,  +0.68]    5.20   4.18
+  arc_easy               acc_norm    2376   61.74   59.72   -2.02 [ -3.28,  -0.80]*   5.81   3.79
+  boolq                  acc         3270   64.13   61.22   -2.91 [ -4.28,  -1.47]*  10.00   7.09
+  hellaswag              acc_norm   10042   64.12   61.82   -2.30 [ -2.78,  -1.85]*   4.01   1.71
+  lambada_openai         acc         5153   62.93   59.05   -3.88 [ -4.81,  -2.99]*   7.55   3.67
+  piqa                   acc         1838   75.24   73.72   -1.52 [ -2.61,  -0.44]*   3.48   1.96
+  winogrande             acc         1267   60.77   60.85   +0.08 [ -1.82,  +1.97]    5.76   5.84
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.86   35.75   -1.11 [ -2.90,  +0.68]    5.38   4.27
+  arc_easy               acc_norm    2376   61.74   59.43   -2.31 [ -3.62,  -1.01]*   6.31   4.00
+  boolq                  acc         3270   64.13   57.43   -6.70 [ -8.47,  -4.86]*  17.31  10.61
+  hellaswag              acc_norm   10042   64.12   61.69   -2.43 [ -2.92,  -1.94]*   4.42   1.99
+  lambada_openai         acc         5153   62.93   58.08   -4.85 [ -5.80,  -3.92]*   8.50   3.65
+  piqa                   acc         1838   75.24   73.50   -1.74 [ -2.88,  -0.65]*   3.86   2.12
+  winogrande             acc         1267   60.77   61.17   +0.39 [ -1.50,  +2.37]    6.00   6.39
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.
+GPTQV4 DONE 02:46:08
