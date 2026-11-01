@@ -1094,6 +1094,42 @@ M = 16：fp16 / v4 默认 / v4 最快 —— wq/wo 21.8 / 26.9 / 25.7，wk/wv 13
 
 解释：
 
+### T15 Graph 下的端到端，以及 INT4 prefill 为什么慢（2026-11-01）
+
+复盘线指出：CUDA Graph 只覆盖 decode，INT4 的 prefill（v4 走 v3）比 FP16 慢约一倍，端到端可能反而更慢。数据来自已有的 `results/bench_part3.csv`（I4、E1f-C）和 T2 的 nsys（`prof/p3_*_bs1_1029`，eager；prefill 在 graph 模式下同样是 eager，不受影响）。
+
+**(1) 端到端**（input 256 / output 32 = 1 次 prefill + 31 步 decode；`bench.py --cuda-graph`）
+
+| | prefill (ms) | decode (ms/步) | e2e (ms) |
+|---|---:|---:|---:|
+| FP16 + graph，bs=1 | 18.14 | 3.745 | **134.3** |
+| v4 + graph，bs=1（默认配置） | 38.29 | 3.310 | **140.9** |
+| v4 + graph + GPTQ，bs=1 | 36.82 | 3.319 | 139.7 |
+| FP16 + graph，bs=8 / 16 | 41.99 / 88.62 | 6.089 / 8.134 | 232.0 / 342.2 |
+| v4 + graph，bs=8 / 16 | 47.59 / 94.29 | 6.053 / 8.677 | 236.9 / 366.1 |
+
+- 三种 bs 下，v4 + graph 的端到端都比 FP16 + graph 慢（bs=1 慢 4.9%）。
+- bs=1：prefill 多 20.15 ms，decode 每步少 0.435 ms → 输出约 47 个 token 时两者持平；decode 用 T4 的 any 配置（2.924 ms / 步，少 0.821 ms）时约 25 个 token。
+
+**(2) prefill 的时间构成**（nsys，bs=1，prefill NVTX 区间）
+
+| | CPU 区间 | GPU 忙碌 | GPU 跨度 | kernel 数 | launch API 时间 |
+|---|---:|---:|---:|---:|---:|
+| FP16 | 26.97 | 11.91 | 27.65 | 702 | 6.00 |
+| v3 / v4（相同） | 46.97 | 20.69 | 50.04 | 815 | 7.55 |
+| 差值 | +20.00 | +8.78 | +22.39 | +113 | +1.55 |
+
+（单位 ms；nsys 下 CPU 时间整体偏大。）
+
+- v3 多出的 113 个 kernel 是每个 Linear 一次的融合 dequant（`triton_poi_fused__to_copy_mul_sub_0`，共 7.27 ms）；cutlass GEMM 由 4.74 增加到 5.37 ms。
+- FP16 与 v3 的 prefill 都是 GPU 跨度 ≈ CPU 区间，GPU 忙碌不到一半。
+- CPU 区间多出的 20.0 ms 中，launch API 只占 1.55 ms；平均每个 Linear 多约 175 µs 的 CPU 时间。不开 nsys 时 prefill 为 17.85 → 37.53 ms（T1，+19.7 ms，约 174 µs / 次）。
+- 对照：decode 中 v3 比 v2 慢约 3 ms（I2）；v4 的 `int4_linear` 每次调用的 CPU 发射开销为 90–110 µs（T4）。
+
+预测：
+
+解释：
+
 ---
 
 ## 问题记录
