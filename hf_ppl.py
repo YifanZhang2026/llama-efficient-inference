@@ -42,8 +42,8 @@ def rtn_dequant(w, g=128):
     return deq.reshape(out_f, in_f).half()
 
 
-def load(path, quantized):
-    kw = dict(dtype=torch.float16, device_map="cuda")
+def load(path, quantized, dtype=torch.float16):
+    kw = dict(dtype=dtype, device_map="cuda")
     if quantized:
         try:
             from transformers import CompressedTensorsConfig
@@ -84,6 +84,7 @@ def main():
     p.add_argument("--hf-path", default="/root/autodl-tmp/hf/Llama-3.2-1B")
     p.add_argument("--models", nargs="*", default=[], help="name=path of compressed-tensors checkpoints")
     p.add_argument("--rtn", action="store_true", help="add rtn_g128 (all Linear but lm_head) built in process")
+    p.add_argument("--bf16", action="store_true", help="add the HF model loaded in bf16 (the released dtype) vs the fp16 reference")
     p.add_argument("--ctx", type=int, default=2048)
     p.add_argument("--data-dir", default="data")
     p.add_argument("--csv", default="results/hf_ppl.csv")
@@ -100,6 +101,8 @@ def main():
                 n_q += 1
         print(f"rtn_g128: quantized {n_q} Linear (lm_head kept FP16)")
         models["rtn_g128"] = m
+    if a.bf16:
+        models["bf16"] = load(a.hf_path, False, torch.bfloat16)
     for spec in a.models:
         name, path = spec.split("=", 1)
         models[name] = load(path, True)
