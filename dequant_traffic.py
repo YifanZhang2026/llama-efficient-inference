@@ -30,6 +30,7 @@ only on the shape. Runs with nothing but torch installed (no tiktoken needed).
 
 Usage:
     python dequant_traffic.py                 # A + B, appends results/dequant_traffic.csv
+    python dequant_traffic.py --impl v3 --shape big=65536x2048   # T9: the v2 / v3 / v4 decode path
     python dequant_traffic.py --shape big=65536x2048 --shape w1=8192x2048   # random weights
 """
 import argparse
@@ -49,6 +50,7 @@ _spec = importlib.util.spec_from_file_location(
 _quantize = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_quantize)
 QuantizedLinear = _quantize.QuantizedLinear
+dequant_fn, int4_linear_fn = _quantize.dequant_fn, _quantize.int4_linear_fn
 
 CKPT_DIR = os.environ.get("LLAMA_CKPT_DIR", "./ckpt")  # same default as llama/config.py
 SHAPES = {"lm_head": "output.weight", "wq": "layers.0.attention.wq.weight"}
@@ -92,6 +94,22 @@ def steps(packed, scale, zp, group_size):
     ]
 
 
+def impl_steps(impl, packed, scale, zp, group_size, x):
+    """Whole decode-path calls for v2 / v3 / v4 (T9), with the hand-count bytes per weight.
+    v2: & 1 + >> 1 + stack 2 + .half() 3 + sub_ 4 + mul_ 4 = 15; v3: read 0.5 + write fp16 2 = 2.5;
+    then F.linear reads the fp16 weight (2). v4: one fused kernel, 0.5 + scale/zp ~ 0.53."""
+    out_f, half_in = packed.shape
+    n = out_f * half_in * 2
+    if impl == "v4":
+        f4 = int4_linear_fn()
+        return n, [("v4 int4_linear (M=1, default config)", lambda: f4(x, packed, scale, zp, group_size), 0.53 * n)]
+    deq = dequant_fn(impl)
+    w16 = deq(packed, scale, zp, group_size)
+    hand = 15.0 if impl == "v2" else 2.5
+    return n, [(f"{impl} dequant (whole)", lambda: deq(packed, scale, zp, group_size), hand * n),
+               ("F.linear fp16, 1 token", lambda: F.linear(x, w16), 2.0 * n)]
+
+
 def time_ms(fn, warmup, iters):
     for _ in range(warmup):
         fn()
@@ -124,6 +142,8 @@ def main():
     p.add_argument("--warmup", type=int, default=5)
     p.add_argument("--iters", type=int, default=50)
     p.add_argument("--ncu", action="store_true", help="run every step once inside cudaProfilerStart/Stop")
+    p.add_argument("--impl", default="v1", choices=["v1", "v2", "v3", "v4"],
+                   help="v1: dequantize_packed line by line (E4b); v2-v4: the whole decode path (T9)")
     p.add_argument("--shape", action="append", default=[],
                    help="name=OUTxIN with random weights, repeatable (default: lm_head and wq from the checkpoint)")
     p.add_argument("--csv", default="results/dequant_traffic.csv")
@@ -153,17 +173,21 @@ def main():
     for shape_name, load in shapes.items():
         w = load()
         packed, scale, zp = QuantizedLinear.quantize_tensor(w, a.group_size)
-        n, ops = steps(packed, scale, zp, a.group_size)
         x = torch.randn(1, 1, w.shape[1], dtype=torch.float16, device="cuda")
         w16 = QuantizedLinear.dequantize_packed(packed, scale, zp, a.group_size)
-        whole = [("dequantize_packed (whole)", lambda: QuantizedLinear.dequantize_packed(packed, scale, zp, a.group_size), 32.0 * n),
-                 ("F.linear fp16, 1 token", lambda: F.linear(x, w16), 2.0 * n)]
+        if a.impl == "v1":
+            n, ops = steps(packed, scale, zp, a.group_size)
+            whole = [("dequantize_packed (whole)", lambda: QuantizedLinear.dequantize_packed(packed, scale, zp, a.group_size), 32.0 * n),
+                     ("F.linear fp16, 1 token", lambda: F.linear(x, w16), 2.0 * n)]
+        else:
+            n, ops = impl_steps(a.impl, packed, scale, zp, a.group_size, x)
+            whole = []
 
         if a.ncu:
             for _, fn, _ in ops + whole:  # warm up outside the capture
                 fn()
             torch.cuda.synchronize()
-            print(f"[{shape_name}] {list(w.shape)}: kernels in capture order:")
+            print(f"[{shape_name}] {list(w.shape)} impl={a.impl}: kernels in capture order:")
             torch.cuda.profiler.start()
             for name, fn, _ in ops:
                 torch.cuda.nvtx.range_push(f"{shape_name}:{name.split()[0]}")
@@ -174,7 +198,7 @@ def main():
             torch.cuda.profiler.stop()
             continue
 
-        print(f"\n[{shape_name}] {list(w.shape)}, N = {n:,} weights, group {a.group_size}")
+        print(f"\n[{shape_name}] {list(w.shape)}, N = {n:,} weights, group {a.group_size}, impl {a.impl}")
         print(f"  {'step':<30} {'ms':>8} {'hand-count MB':>14} {'B/weight':>9} {'GB/s':>8} {'% of copy':>9}")
         total_ms = 0.0
         for name, fn, nbytes in ops + whole:
@@ -183,13 +207,14 @@ def main():
             if not name.startswith(("dequantize_packed", "F.linear")):
                 total_ms += ms
             print(f"  {name:<30} {ms:8.3f} {nbytes / 1e6:14.1f} {nbytes / n:9.1f} {gbps:8.1f} {100 * gbps / ref_bw:8.1f}%")
-            rows.append({"shape": shape_name, "out": w.shape[0], "in": w.shape[1], "group_size": a.group_size,
+            rows.append({"shape": shape_name, "impl": a.impl, "out": w.shape[0], "in": w.shape[1], "group_size": a.group_size,
                          "step": name.split()[0], "ms": round(ms, 4), "hand_bytes": int(nbytes),
                          "bytes_per_weight": nbytes / n, "eff_gbps": round(gbps, 1),
                          "copy_gbps": round(ref_bw, 1), "gpu": gpu, "torch": torch.__version__,
                          "time": datetime.datetime.now().isoformat(timespec="seconds")})
-        pred = 32.0 * n / ref_bw / 1e6
-        print(f"  sum of steps {total_ms:.3f} ms | predicted 32 B x N / copy bandwidth = {pred:.3f} ms")
+        if a.impl == "v1":
+            pred = 32.0 * n / ref_bw / 1e6
+            print(f"  sum of steps {total_ms:.3f} ms | predicted 32 B x N / copy bandwidth = {pred:.3f} ms")
         del w, packed, scale, zp, w16
         torch.cuda.empty_cache()
 

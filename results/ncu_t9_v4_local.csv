@@ -1,0 +1,7 @@
+==PROF== Connected to process 35518 (/home/yifan/miniconda3/envs/dp/bin/python3.11)
+==PROF== Disconnected from process 35518
+"ID","Process ID","Process Name","Host Name","Kernel Name","Context","Stream","Block Size","Grid Size","Device","CC","Section Name","Metric Name","Metric Unit","Metric Value"
+"0","35518","python3.11","127.0.0.1","_int4_gemv_kernel","1","7","(256, 1, 1)","(512, 1, 1)","0","12.0","Command line profiler metrics","dram__bytes_op_read.sum","byte","71988480"
+"0","35518","python3.11","127.0.0.1","_int4_gemv_kernel","1","7","(256, 1, 1)","(512, 1, 1)","0","12.0","Command line profiler metrics","dram__bytes_op_write.sum","byte","4772608"
+"0","35518","python3.11","127.0.0.1","_int4_gemv_kernel","1","7","(256, 1, 1)","(512, 1, 1)","0","12.0","Command line profiler metrics","gpu__time_duration.sum","ns","272832"
+"0","35518","python3.11","127.0.0.1","_int4_gemv_kernel","1","7","(256, 1, 1)","(512, 1, 1)","0","12.0","Command line profiler metrics","lts__t_bytes.sum","byte","99682624"
