@@ -1,0 +1,5 @@
+dataset,model,ppl,acc,agree_vs_fp16,kl_vs_fp16,time
+alpaca,ours_fp16,9.6602,51.375,,,2026-11-01T21:42:12
+alpaca,ours_bf16,9.675,51.357,97.934,0.000547,2026-11-01T21:42:12
+wikitext2,ours_fp16,9.8862,51.711,,,2026-11-01T21:42:12
+wikitext2,ours_bf16,9.8914,51.715,97.918,0.00059,2026-11-01T21:42:12

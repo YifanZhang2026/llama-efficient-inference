@@ -453,6 +453,42 @@ boolq 翻转率（R→W / W→R）：GPTQ + FP16 lm_head 10.00 / 7.09，GPTQ + c
 
 解释：
 
+### E1g FP16 vs BF16 基线
+
+`ppl_dtype.py`、`hf_ppl.py --bf16`（3b5a9e9），`scripts/run_dtype_1101.sh`，`logs/ppl_dtype_1101.log`、`logs/hf_ppl_dtype_1101.log`、`logs/lmeval_r0_hf_bf16_1101.log`、`logs/lmeval_compare_*_vs_r0_hf_bf16_1101.log`、`results/ppl_dtype.csv`、`results/hf_ppl_dtype.csv`，2026-11-01，A100。
+
+Meta checkpoint 的 147 个张量都是 bf16，HF `config.json` 的 `torch_dtype` 也是 bfloat16；本仓库的 `bench.py` / `eval_ppl.py` 一律以 fp16 建模型（`torch.cuda.HalfTensor`），加载时把 bf16 权重转成 fp16。
+
+**权重 bf16 → fp16 的转换误差**（全部 1,498,482,688 个元素，含 tok_embeddings 与重复的 output）：max |w| = 2.906；max |fp16(w) − w| = 2.98e-8；绝对值小于 fp16 最小正规数 6.1e-5 的非零权重 4,016,725 个（0.268%），其中 2,029 个在 fp16 中变为 0。
+
+**同一 checkpoint 分别以 fp16 / bf16 运行**（口径同 E1b；agree / KL 相对 fp16）：
+
+| 模型 | Alpaca PPL fp16 / bf16 | agree / KL | WikiText-2 PPL fp16 / bf16 | acc fp16 / bf16 | agree / KL |
+|---|---|---|---|---|---|
+| 我们的代码（`ppl_dtype.py`，默认类型切换为 `BFloat16Tensor`，模型代码不变） | 9.6602 / 9.6750 | 97.93% / 0.00055 | 9.8862 / 9.8914 | 51.71% / 51.71% | 97.92% / 0.00059 |
+| HF transformers（`hf_ppl.py --bf16`） | 9.6826 / 9.6893 | 97.92% / 0.0005 | 9.7510 / 9.7566 | 51.83% / 51.81% | 97.90% / 0.0006 |
+
+**lm-eval**（R0 HF bf16 = `eval_tasks.py --backend hf --dtype bfloat16`；配对 95% bootstrap CI，`*` = 不含 0）：
+
+| 任务 | R0 HF fp16 | R0 HF bf16 | Δ（bf16 − HF fp16） | Δ（bf16 − R1 我们的 fp16） |
+|---|---:|---:|---|---|
+| arc_challenge（acc_norm） | 36.77 | 36.60 | −0.17 [−0.77, +0.43] | −0.26 [−0.94, +0.43] |
+| arc_easy（acc_norm） | 61.83 | 61.62 | −0.21 [−0.55, +0.08] | −0.13 [−0.51, +0.25] |
+| boolq（acc） | 63.76 | 63.64 | −0.12 [−0.67, +0.43] | −0.49 [−1.16, +0.18] |
+| hellaswag（acc_norm） | 64.16 | 64.16 | +0.00 [−0.15, +0.15] | +0.04 [−0.12, +0.20] |
+| lambada_openai（acc） | 62.91 | 62.10 | −0.82* [−1.11, −0.52] | −0.83* [−1.16, −0.50] |
+| piqa（acc） | 75.14 | 75.24 | +0.11 [−0.16, +0.44] | +0.00 [−0.33, +0.33] |
+| winogrande（acc） | 60.85 | 60.30 | −0.55 [−1.42, +0.32] | −0.47 [−1.42, +0.47] |
+| 7 项平均 | 60.78 | 60.52 | −0.26 | −0.31 |
+
+- fp16 与 bf16 运行的 PPL 相差 0.005–0.015，KL 约 0.0006，top-1 一致率约 97.9%（两套实现相同）。
+- lm-eval：7 个任务中只有 lambada 的差异显著（bf16 低 0.82 个百分点）；翻转率每个任务 ≤ 2.2%。
+- 对照：INT4（E1b / E1e / E1f）的 agree 为 77–88%、KL 0.06–0.22、lm-eval 平均下降 1.9–5.9 个百分点。
+
+预测：
+
+解释：
+
 ### E2 FP16 vs INT4 性能（input_len=256, output_len=32）
 
 `bench.py`，warmup 3，iters 10，2026-10-13。

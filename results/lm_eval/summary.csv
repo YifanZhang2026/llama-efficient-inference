@@ -87,3 +87,15 @@ gptq_lmclip,ours,,lambada_openai,acc,0.580827,0.006874,,2026-11-01T02:45:59
 gptq_lmclip,ours,,piqa,acc,0.735038,0.010297,,2026-11-01T02:45:59
 gptq_lmclip,ours,,piqa,acc_norm,0.737758,0.010263,,2026-11-01T02:45:59
 gptq_lmclip,ours,,winogrande,acc,0.611681,0.013697,,2026-11-01T02:45:59
+r0_hf_bf16,hf,,arc_challenge,acc,0.312287,0.013543,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,arc_challenge,acc_norm,0.366041,0.014077,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,arc_easy,acc,0.662037,0.009706,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,arc_easy,acc_norm,0.616162,0.009979,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,boolq,acc,0.636391,0.008413,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,hellaswag,acc,0.48098,0.004986,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,hellaswag,acc_norm,0.641605,0.004785,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,lambada_openai,perplexity,5.42893,0.127944,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,lambada_openai,acc,0.620997,0.006759,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,piqa,acc,0.752448,0.01007,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,piqa,acc_norm,0.746464,0.01015,,2026-11-01T21:47:33
+r0_hf_bf16,hf,,winogrande,acc,0.602999,0.013751,,2026-11-01T21:47:33

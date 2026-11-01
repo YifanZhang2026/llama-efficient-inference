@@ -1,0 +1,10 @@
+r0_hf_bf16 vs r0_hf_fp16  (Δ = new − ref, percentage points; 95% paired bootstrap CI)
+  task                   metric         n     ref     new       Δ            95% CI    R→W    W→R
+  arc_challenge          acc_norm    1172   36.77   36.60   -0.17 [ -0.77,  +0.43]    0.60   0.43
+  arc_easy               acc_norm    2376   61.83   61.62   -0.21 [ -0.55,  +0.08]    0.42   0.21
+  boolq                  acc         3270   63.76   63.64   -0.12 [ -0.67,  +0.43]    1.38   1.25
+  hellaswag              acc_norm   10042   64.16   64.16   +0.00 [ -0.15,  +0.15]    0.28   0.28
+  lambada_openai         acc         5153   62.91   62.10   -0.82 [ -1.11,  -0.52]*   0.99   0.17
+  piqa                   acc         1838   75.14   75.24   +0.11 [ -0.16,  +0.44]    0.16   0.27
+  winogrande             acc         1267   60.85   60.30   -0.55 [ -1.42,  +0.32]    1.58   1.03
+  * = CI excludes 0.  R→W = right under ref, wrong under new (% of questions); W→R the reverse.

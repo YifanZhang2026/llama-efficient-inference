@@ -1,0 +1,14 @@
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:02<05:11,  2.15s/it]Loading weights:  18%|█▊        | 27/146 [00:02<00:07, 16.23it/s]Loading weights:  26%|██▌       | 38/146 [00:02<00:05, 18.87it/s]Loading weights:  32%|███▏      | 46/146 [00:02<00:04, 21.16it/s]Loading weights:  36%|███▌      | 52/146 [00:03<00:04, 22.19it/s]Loading weights:  39%|███▉      | 57/146 [00:03<00:04, 21.41it/s]Loading weights:  45%|████▍     | 65/146 [00:03<00:02, 27.67it/s]Loading weights:  48%|████▊     | 70/146 [00:03<00:02, 26.49it/s]Loading weights:  51%|█████     | 74/146 [00:03<00:02, 26.16it/s]Loading weights:  53%|█████▎    | 78/146 [00:04<00:02, 24.79it/s]Loading weights:  56%|█████▌    | 82/146 [00:04<00:02, 27.19it/s]Loading weights:  59%|█████▉    | 86/146 [00:04<00:02, 24.07it/s]Loading weights:  62%|██████▏   | 90/146 [00:04<00:02, 25.76it/s]Loading weights:  64%|██████▍   | 94/146 [00:04<00:02, 25.48it/s]Loading weights:  68%|██████▊   | 99/146 [00:04<00:01, 29.34it/s]Loading weights:  71%|███████   | 103/146 [00:05<00:02, 21.47it/s]Loading weights:  77%|███████▋  | 112/146 [00:05<00:01, 26.96it/s]Loading weights:  82%|████████▏ | 120/146 [00:05<00:00, 30.69it/s]Loading weights:  85%|████████▍ | 124/146 [00:05<00:00, 26.89it/s]Loading weights:  89%|████████▉ | 130/146 [00:06<00:00, 26.95it/s]Loading weights:  91%|█████████ | 133/146 [00:06<00:00, 24.48it/s]Loading weights:  95%|█████████▌| 139/146 [00:06<00:00, 28.79it/s]Loading weights: 100%|██████████| 146/146 [00:06<00:00, 22.83it/s]
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:00<00:22,  6.56it/s]Loading weights:  16%|█▌        | 23/146 [00:00<00:01, 106.09it/s]Loading weights:  34%|███▎      | 49/146 [00:00<00:00, 164.56it/s]Loading weights:  51%|█████▏    | 75/146 [00:00<00:00, 196.01it/s]Loading weights:  68%|██████▊   | 99/146 [00:00<00:00, 210.36it/s]Loading weights:  84%|████████▎ | 122/146 [00:00<00:00, 212.02it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 192.89it/s]
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (289077 > 131072). Running this sequence through the model will result in indexing errors
+alpaca: 5711 predicted tokens | wikitext2 test: 289077 tokens (BOS True)
+
+[alpaca ctx=128]
+  fp16       PPL    9.6826 (+0.000) | acc 51.36% | 5711 tokens
+  bf16       PPL    9.6893 (+0.007) | acc 51.29% | 5711 tokens | agree 97.92% | KL 0.0005
+
+[wikitext2 ctx=2048]
+  fp16       PPL    9.7510 (+0.000) | acc 51.83% | 288627 tokens
+  bf16       PPL    9.7566 (+0.006) | acc 51.81% | 288627 tokens | agree 97.90% | KL 0.0006
+
+appended 4 rows to results/hf_ppl_dtype.csv

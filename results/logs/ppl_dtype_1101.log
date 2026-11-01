@@ -1,0 +1,9 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+dtypes: {'fp16': torch.float16, 'bf16': torch.bfloat16}
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+[alpaca] ours fp16: PPL 9.6602 | acc 51.37%
+[alpaca] ours bf16: PPL 9.6750 | acc 51.36% | agree 97.93% | KL 0.00055
+[wikitext2] ours fp16: PPL 9.8862 | acc 51.71%
+[wikitext2] ours bf16: PPL 9.8914 | acc 51.71% | agree 97.92% | KL 0.00059
