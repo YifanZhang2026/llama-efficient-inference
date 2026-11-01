@@ -1,0 +1,24 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/__init__.py:1264: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at /pytorch/torch/csrc/tensor/python_tensor.cpp:434.)
+  _C._set_default_tensor_type(t)
+Reloaded tiktoken model from ./ckpt/tokenizer.model
+#words: 128256 - BOS ID: 128000 - EOS ID: 128001
+calibration: 128 x 2048 tokens from WikiText-2 train (2436239 tokens)
+block  0: qkv a=0.10 0.949 | gate/up a=0.25 0.972 | down a=0.45 0.799   (best output MSE / MSE at alpha=0)
+block  1: qkv a=0.25 0.806 | gate/up a=0.35 0.957 | down a=0.95 0.080   (best output MSE / MSE at alpha=0)
+block  2: qkv a=0.20 0.870 | gate/up a=0.35 0.937 | down a=0.30 0.882   (best output MSE / MSE at alpha=0)
+block  3: qkv a=0.20 0.894 | gate/up a=0.30 0.944 | down a=0.25 0.926   (best output MSE / MSE at alpha=0)
+block  4: qkv a=0.30 0.892 | gate/up a=0.35 0.937 | down a=0.15 0.956   (best output MSE / MSE at alpha=0)
+block  5: qkv a=0.30 0.830 | gate/up a=0.35 0.915 | down a=0.15 0.936   (best output MSE / MSE at alpha=0)
+block  6: qkv a=0.30 0.879 | gate/up a=0.30 0.902 | down a=0.10 0.977   (best output MSE / MSE at alpha=0)
+block  7: qkv a=0.30 0.845 | gate/up a=0.30 0.895 | down a=0.15 0.974   (best output MSE / MSE at alpha=0)
+block  8: qkv a=0.35 0.827 | gate/up a=0.30 0.878 | down a=0.15 0.952   (best output MSE / MSE at alpha=0)
+block  9: qkv a=0.30 0.863 | gate/up a=0.30 0.906 | down a=0.25 0.935   (best output MSE / MSE at alpha=0)
+block 10: qkv a=0.30 0.767 | gate/up a=0.35 0.912 | down a=0.20 0.935   (best output MSE / MSE at alpha=0)
+block 11: qkv a=0.30 0.833 | gate/up a=0.35 0.912 | down a=0.30 0.851   (best output MSE / MSE at alpha=0)
+block 12: qkv a=0.25 0.854 | gate/up a=0.35 0.928 | down a=0.35 0.789   (best output MSE / MSE at alpha=0)
+block 13: qkv a=0.25 0.819 | gate/up a=0.30 0.949 | down a=0.40 0.724   (best output MSE / MSE at alpha=0)
+block 14: qkv a=0.20 0.907 | gate/up a=0.25 0.972 | down a=0.40 0.609   (best output MSE / MSE at alpha=0)
+block 15: qkv a=0.15 0.966 | gate/up a=0.15 0.981 | down a=0.35 0.468   (best output MSE / MSE at alpha=0)
+saved /root/fakequant_sys/awq_ours_rtn_int4.pt and awq_ours_rtn_fake.pth
+saved /root/fakequant_sys/awq_ours_clip_int4.pt and awq_ours_clip_fake.pth
+done in 82 s
